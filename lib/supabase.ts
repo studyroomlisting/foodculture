@@ -9,9 +9,22 @@
  *  createRLSClient() — server-side (anon key, RLS enforced)
  *
  * NEVER use service role key here. Only in explicit /api/admin/* routes.
+ *
+ * IMPORTANT: the browser singleton MUST be created with `createBrowserClient`
+ * from `@supabase/ssr` (not the plain `createClient` from
+ * `@supabase/supabase-js`). `@supabase/supabase-js`'s createClient stores the
+ * session/PKCE code_verifier in localStorage; `@supabase/ssr`'s
+ * createServerClient (used in middleware.ts and app/auth/callback/route.ts)
+ * only reads cookies. With the two mismatched, Google OAuth sign-in returned
+ * tokens directly in a URL hash fragment (#access_token=...) instead of the
+ * expected ?code=... query param, and /auth/callback saw no `code` and
+ * bounced to /auth/signin?error=code_missing. createBrowserClient stores the
+ * session in cookies, matching the server-side client, and defaults to the
+ * PKCE flow the callback route expects.
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '@/types/database'
 
 function getEnv() {
@@ -32,7 +45,7 @@ export const supabase = new Proxy({} as SupabaseClient<Database>, {
         // Return a no-op during build — queries will return empty/error
         return () => ({ data: null, error: new Error('Supabase not configured') })
       }
-      _supabase = createClient<Database>(env.url, env.key)
+      _supabase = createBrowserClient<Database>(env.url, env.key)
     }
     const val = (_supabase as any)[prop]
     return typeof val === 'function' ? val.bind(_supabase) : val
