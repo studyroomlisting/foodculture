@@ -51,7 +51,7 @@ begin
       locked_reason = null
   where id = p_user_id;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 -- ─── Function: check_account_locked ──────────────────────────────────────────
 create or replace function is_account_locked(p_user_id uuid)
@@ -59,7 +59,7 @@ returns boolean as $$
   select locked_at is not null
   from profiles
   where id = p_user_id;
-$$ language sql security definer stable;
+$$ language sql security definer stable set search_path = public;
 
 -- ─── Verification ─────────────────────────────────────────────────────────────
 -- select column_name, data_type from information_schema.columns
@@ -135,4 +135,4 @@ begin
 
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;

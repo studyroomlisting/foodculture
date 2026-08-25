@@ -425,5 +425,5 @@ begin
                    end;
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 -- Trigger is already created — function replacement takes effect immediately
