@@ -36,7 +36,14 @@ export default function AccountPage() {
   const [saved, setSaved]       = useState(false)
   const emailUpdated = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('email_updated') === '1'
   const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState('')
+  // NOTE: kept separate on purpose — `loadError` is a fatal, page-level
+  // failure (can't fetch the profile at all) that replaces the whole page
+  // below; `formError` is a recoverable, inline failure (e.g. avatar upload)
+  // that should only show a small banner without hiding the rest of the
+  // page. They used to be the same state, so an avatar upload error would
+  // blank out the entire account page with "Could not load profile".
+  const [loadError, setLoadError] = useState('')
+  const [formError, setFormError] = useState('')
   const [notifs, setNotifs]     = useState({ influencer_posts: true, enquiries: true, ai_scores: true, deals_expiry: true, marketing: false })
 
   useEffect(() => {
@@ -44,7 +51,7 @@ export default function AccountPage() {
       if (!user) { router.push('/auth/signin'); return }
       setUser(user)
       const { data: p, error: pErr } = await (supabase as any).from('profiles').select('id,full_name,phone,city,role,onboarding_complete').eq('id', user.id).single()
-      if (pErr || !p) { setError('Could not load your profile. Please refresh.'); setLoading(false); return }
+      if (pErr || !p) { setLoadError('Could not load your profile. Please refresh.'); setLoading(false); return }
       setProfile(p)
       setForm({ full_name: p.full_name ?? '', phone: p.phone ?? '', city: p.city ?? 'Bengaluru' })
       setLoading(false)
@@ -58,13 +65,13 @@ export default function AccountPage() {
     setTimeout(() => setSaved(false), 2500)
   }
 
-  if (error) return (
+  if (loadError) return (
     <div style={{ fontFamily: '-apple-system,sans-serif', minHeight: '100vh' }}>
       <Nav />
       <div style={{ maxWidth: 480, margin: '80px auto', padding: '0 24px', textAlign: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
         <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Could not load profile</h1>
-        <p style={{ fontSize: 14, color: '#888', marginBottom: 20 }}>{error}</p>
+        <p style={{ fontSize: 14, color: '#888', marginBottom: 20 }}>{loadError}</p>
         <button onClick={() => window.location.reload()}
           style={{ background: '#E85D26', border: 'none', borderRadius: 10, padding: '10px 24px', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
           Refresh page
@@ -137,6 +144,11 @@ export default function AccountPage() {
         )}
         <section style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: 24, marginBottom: 16 }}>
         <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>📸 Profile photo</h2>
+        {formError && (
+          <div role="alert" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#dc2626', marginBottom: 12 }}>
+            {formError}
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ width: 72, height: 72, borderRadius: '50%', background: C.coral, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 700, flexShrink: 0 }}>{initials}</div>
           <div>
@@ -145,11 +157,12 @@ export default function AccountPage() {
               <input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }}
                 onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
                   const file = e.target.files?.[0]; if (!file) return
-                  if (file.size > 5*1024*1024) { setError('Image must be under 5MB.'); return }
+                  setFormError('')
+                  if (file.size > 5*1024*1024) { setFormError('Image must be under 5MB.'); return }
                   const fd = new FormData(); fd.append('avatar', file)
                   const res = await fetch('/api/profile/avatar', { method: 'POST', body: fd })
                   if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2500) }
-                  else { const j = await res.json(); setError(j.error || 'Upload failed.') }
+                  else { const j = await res.json(); setFormError(j.error || 'Upload failed.') }
                 }} />
             </label>
             <div style={{ fontSize: 11, color: '#aaa' }}>JPG, PNG, WebP · max 5MB</div>

@@ -19,6 +19,7 @@ export default function DashboardLive() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'influencers' | 'deals'>('overview')
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -55,6 +56,7 @@ export default function DashboardLive() {
   async function submitForReview() {
     if (!selected) return
     setSubmitting(true)
+    setSubmitError('')
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setSubmitting(false); return }
 
@@ -64,7 +66,9 @@ export default function DashboardLive() {
       .eq('id', selected.id)
       .eq('owner_id', user.id)
 
-    if (!error) {
+    if (error) {
+      setSubmitError('Could not submit for review. Please try again.')
+    } else {
       const updated = { ...(selected as any), listing_status: 'pending_review' } as Restaurant
       setSelected(updated)
       setRestaurants(prev => prev.map(r => (r.id === updated.id ? updated : r)))
@@ -148,6 +152,11 @@ export default function DashboardLive() {
               </div>
 
               {/* DRAFT — nudge to submit for review, and rejected — show why + let them resubmit */}
+              {submitError && ((selected as any).listing_status === 'draft' || (selected as any).listing_status === 'rejected') && (
+                <div role="alert" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 16px', marginBottom: 12, fontSize: 13, color: '#dc2626' }}>
+                  {submitError}
+                </div>
+              )}
               {(selected as any).listing_status === 'draft' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#FEF9F6', border: '1px solid #f5d5c0', borderRadius: 14, padding: '16px 20px', marginBottom: 24 }}>
                   <span style={{ fontSize: 24 }}>📝</span>
