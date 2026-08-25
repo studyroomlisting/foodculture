@@ -24,7 +24,7 @@ export default function DashboardLive() {
       if (!user) return
       const { data: r } = await (supabase as any)
         .from('restaurants')
-        .select('id,slug,name,emoji,area_label,price_tier,listing_status,intelligence_score,intelligence_score_trend,status,rating,total_reviews,ai_brief,avg_spend')
+        .select('id,slug,name,emoji,area_label,cuisine_tags,price_tier,open_until,peak_hours,listing_status,intelligence_score,intelligence_score_trend,status,rating,total_reviews,ai_brief,avg_spend')
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false })
       const owned = r ?? []
@@ -136,7 +136,7 @@ export default function DashboardLive() {
                   <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 20 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 14 }}>Cuisine tags</div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
-                      {selected.cuisine_tags.map(t => (
+                      {(selected.cuisine_tags ?? []).map(t => (
                         <span key={t} style={{ background: '#FEF0EA', color: C.coral, fontSize: 12, padding: '4px 12px', borderRadius: 10, fontWeight: 500 }}>{t}</span>
                       ))}
                     </div>
