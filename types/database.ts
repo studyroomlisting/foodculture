@@ -3,7 +3,9 @@
 export interface Zone {
   id: string
   name: string
+  slug: string
   trend_score: number
+  restaurant_count: number
   created_at: string
 }
 
@@ -72,6 +74,9 @@ export interface InfluencerPricingTier {
   tier_name: string
   description: string | null
   price: number
+  deliverables: string[]
+  estimated_reach: string | null
+  turnaround_days: number | null
   is_popular: boolean
 }
 
