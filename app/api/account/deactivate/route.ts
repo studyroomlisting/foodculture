@@ -14,7 +14,11 @@ export async function POST(request: NextRequest) {
     const { reason } = await request.json()
     const safeReason = typeof reason === 'string' ? reason.slice(0, 300) : null
     await (supabase as any).from('profiles').update({ deactivated_at: new Date().toISOString(), deactivation_reason: safeReason }).eq('id', user.id)
-    await (supabase as any).from('audit_logs').insert([{ actor_id: user.id, action: 'account.deactivated', target_table: 'profiles', target_id: user.id, metadata: { reason: safeReason } }]).catch(()=>{})
+    // Best-effort audit log — PostgrestBuilder isn't a real Promise (no .catch()),
+    // so wrap in try/catch instead of chaining .catch() directly on it.
+    try {
+      await (supabase as any).from('audit_logs').insert([{ actor_id: user.id, action: 'account.deactivated', target_table: 'profiles', target_id: user.id, metadata: { reason: safeReason } }])
+    } catch {}
     await supabase.auth.signOut()
     return NextResponse.json({ success: true })
   } catch {

@@ -67,11 +67,13 @@ export async function POST(request: NextRequest) {
     })
     if (createErr) return NextResponse.json({ error: createErr.message }, { status: 400 })
 
-    await (supabase as any).from('audit_logs').insert([{
-      actor_id: adminId, action: 'admin.user_created',
-      target_table: 'profiles', target_id: newUser.user?.id,
-      metadata: { email, role },
-    }]).catch(() => {})
+    try {
+      await (supabase as any).from('audit_logs').insert([{
+        actor_id: adminId, action: 'admin.user_created',
+        target_table: 'profiles', target_id: newUser.user?.id,
+        metadata: { email, role },
+      }])
+    } catch {}
     return NextResponse.json({ success: true, user_id: newUser.user?.id })
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

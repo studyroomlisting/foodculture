@@ -56,10 +56,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const { error: upErr } = await (supabase as any).from('profiles').update(updates).eq('id', targetId)
     if (upErr) return NextResponse.json({ error: 'Update failed' }, { status: 500 })
 
-    await (supabase as any).from('audit_logs').insert([{
-      actor_id: adminId, action: `admin.user_${meta.action}`,
-      target_table: 'profiles', target_id: targetId, metadata: meta,
-    }]).catch(() => {})
+    try {
+      await (supabase as any).from('audit_logs').insert([{
+        actor_id: adminId, action: `admin.user_${meta.action}`,
+        target_table: 'profiles', target_id: targetId, metadata: meta,
+      }])
+    } catch {}
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
@@ -84,10 +86,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       )
       await adminClient.auth.admin.deleteUser(targetId)
     }
-    await (supabase as any).from('audit_logs').insert([{
-      actor_id: adminId, action: 'admin.user_deleted',
-      target_table: 'profiles', target_id: targetId, metadata: {},
-    }]).catch(() => {})
+    try {
+      await (supabase as any).from('audit_logs').insert([{
+        actor_id: adminId, action: 'admin.user_deleted',
+        target_table: 'profiles', target_id: targetId, metadata: {},
+      }])
+    } catch {}
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

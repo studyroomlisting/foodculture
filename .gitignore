@@ -4,8 +4,3 @@ node_modules/
 .next/
 out/
 *.tsbuildinfo
-.DS_Store
-npm-debug.log*
-.vercel
-next-env.d.ts
-coverage

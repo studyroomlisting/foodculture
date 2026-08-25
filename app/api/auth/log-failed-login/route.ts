@@ -44,11 +44,13 @@ export async function POST(request: NextRequest) {
             const expiry     = lockedAt + LOCKOUT_MINS * 60 * 1000
             if (Date.now() < expiry) {
               // Still locked — log attempt and return
-              await (admin as any).from('audit_logs').insert([{
-                actor_id: userId, action: 'auth.login_failed',
-                target_table: 'auth.users', target_id: userId,
-                metadata: { email_masked: maskedEmail, ip, reason: 'account_locked' },
-              }]).catch(() => {})
+              try {
+                await (admin as any).from('audit_logs').insert([{
+                  actor_id: userId, action: 'auth.login_failed',
+                  target_table: 'auth.users', target_id: userId,
+                  metadata: { email_masked: maskedEmail, ip, reason: 'account_locked' },
+                }])
+              } catch {}
               return NextResponse.json({ ok: true, locked: true })
             } else {
               // Lockout expired — reset counter
@@ -70,18 +72,22 @@ export async function POST(request: NextRequest) {
             }).eq('id', userId)
 
             // Audit log
-            await (admin as any).from('audit_logs').insert([{
-              actor_id: userId, action: 'auth.login_failed',
-              target_table: 'auth.users', target_id: userId,
-              metadata: { email_masked: maskedEmail, ip, attempt: newCount, locked: shouldLock },
-            }]).catch(() => {})
+            try {
+              await (admin as any).from('audit_logs').insert([{
+                actor_id: userId, action: 'auth.login_failed',
+                target_table: 'auth.users', target_id: userId,
+                metadata: { email_masked: maskedEmail, ip, attempt: newCount, locked: shouldLock },
+              }])
+            } catch {}
 
             if (shouldLock) {
-              await (admin as any).from('audit_logs').insert([{
-                actor_id: userId, action: 'auth.account_locked',
-                target_table: 'auth.users', target_id: userId,
-                metadata: { reason: `${MAX_ATTEMPTS} failed attempts`, ip },
-              }]).catch(() => {})
+              try {
+                await (admin as any).from('audit_logs').insert([{
+                  actor_id: userId, action: 'auth.account_locked',
+                  target_table: 'auth.users', target_id: userId,
+                  metadata: { reason: `${MAX_ATTEMPTS} failed attempts`, ip },
+                }])
+              } catch {}
               return NextResponse.json({ ok: true, locked: true, attempts: newCount })
             }
             return NextResponse.json({ ok: true, locked: false, attempts: newCount, remaining: MAX_ATTEMPTS - newCount })

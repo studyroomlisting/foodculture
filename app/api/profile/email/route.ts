@@ -21,8 +21,11 @@ export async function PUT(request: NextRequest) {
       { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/account` }
     )
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-    // Audit
-    await (supabase as any).from('audit_logs').insert([{ actor_id: user.id, action: 'auth.email_change_requested', target_table: 'auth.users', target_id: user.id, metadata: { new_email_masked: email.replace(/(?<=.{2}).(?=.*@)/g,'*') } }]).catch(()=>{})
+    // Audit — best-effort; PostgrestBuilder isn't a real Promise (no .catch()),
+    // so wrap in try/catch instead of chaining .catch() directly on it.
+    try {
+      await (supabase as any).from('audit_logs').insert([{ actor_id: user.id, action: 'auth.email_change_requested', target_table: 'auth.users', target_id: user.id, metadata: { new_email_masked: email.replace(/(?<=.{2}).(?=.*@)/g,'*') } }])
+    } catch {}
     return NextResponse.json({ success: true, message: 'Verification email sent to your new address.' })
   } catch {
     return NextResponse.json({ error: 'Internal error.' }, { status: 500 })

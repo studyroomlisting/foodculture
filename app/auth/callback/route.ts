@@ -48,13 +48,20 @@ export async function GET(request: NextRequest) {
   // Handle email change confirmation — redirect to account with success message
   const type = searchParams.get('type')
   if (type === 'email_change') {
-    await (supabase as any).from('audit_logs').insert([{
-      actor_id: session.user.id,
-      action: 'auth.email_changed',
-      target_table: 'auth.users',
-      target_id: session.user.id,
-      metadata: { new_email: session.user.email },
-    }]).catch(() => {})
+    // NOTE: PostgrestBuilder (the Supabase query builder) is "thenable" but
+    // does NOT implement .catch()/.finally() like a real Promise — chaining
+    // .catch() directly on it throws `TypeError: ...insert(...).catch is not
+    // a function` and crashes this route handler before it can redirect.
+    // Wrap in try/catch instead to keep this best-effort/non-blocking.
+    try {
+      await (supabase as any).from('audit_logs').insert([{
+        actor_id: session.user.id,
+        action: 'auth.email_changed',
+        target_table: 'auth.users',
+        target_id: session.user.id,
+        metadata: { new_email: session.user.email },
+      }])
+    } catch {}
     return NextResponse.redirect(`${origin}/account?email_updated=1`)
   }
 
@@ -67,28 +74,32 @@ export async function GET(request: NextRequest) {
   const urlRole = searchParams.get('role')
   const allowedRoles = ['visitor','owner','influencer']
   if (isNewUser && urlRole && allowedRoles.includes(urlRole)) {
-    await (supabase as any)
-      .from('profiles')
-      .update({ role: urlRole, onboarding_role: urlRole })
-      .eq('id', userId)
-      .catch(() => {})
+    try {
+      await (supabase as any)
+        .from('profiles')
+        .update({ role: urlRole, onboarding_role: urlRole })
+        .eq('id', userId)
+    } catch {}
   }
 
   // ── Audit log: register or login ──────────────────────────────────────────
   const action = isNewUser ? 'auth.register' : 'auth.login'
-  await (supabase as any).from('audit_logs').insert([{
-    actor_id:    userId,
-    action,
-    target_table:'auth.users',
-    target_id:   userId,
-    metadata:    { provider, is_new_user: isNewUser },
-  }]).catch(() => {})
+  try {
+    await (supabase as any).from('audit_logs').insert([{
+      actor_id:    userId,
+      action,
+      target_table:'auth.users',
+      target_id:   userId,
+      metadata:    { provider, is_new_user: isNewUser },
+    }])
+  } catch {}
 
   // ── Reset failed login count on successful login ───────────────────────────
-  await (supabase as any).from('profiles')
-    .update({ failed_login_count: 0, locked_at: null })
-    .eq('id', userId)
-    .catch(() => {})
+  try {
+    await (supabase as any).from('profiles')
+      .update({ failed_login_count: 0, locked_at: null })
+      .eq('id', userId)
+  } catch {}
 
   // ── Send welcome email to new users (non-blocking) ───────────────────────
   if (isNewUser && session.user.email) {
@@ -97,11 +108,13 @@ export async function GET(request: NextRequest) {
       .select('full_name,role')
       .eq('id', userId)
       .single()
-    await sendWelcomeEmail({
-      to:   session.user.email,
-      name: pData?.full_name ?? '',
-      role: pData?.role      ?? 'visitor',
-    }).catch(() => {})
+    try {
+      await sendWelcomeEmail({
+        to:   session.user.email,
+        name: pData?.full_name ?? '',
+        role: pData?.role      ?? 'visitor',
+      })
+    } catch {}
   }
 
   return NextResponse.redirect(`${origin}${next}`)
