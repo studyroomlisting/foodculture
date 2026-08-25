@@ -5,13 +5,14 @@
 -- connection requests, zones, notifications.
 -- ============================================================================
 
-create extension if not exists "uuid-ossp";
+-- gen_random_uuid() is a built-in Postgres 13+ function (pg_catalog) — no extension needed.
+-- (uuid-ossp/"@extschema@" search_path issues on Supabase were causing "function uuid_generate_v4() does not exist")
 
 -- ---------------------------------------------------------------------------
 -- ZONES (neighbourhoods) — used on homepage "Trending zones" + dashboards
 -- ---------------------------------------------------------------------------
 create table zones (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,                     -- "Koramangala"
   slug text not null unique,              -- "koramangala" — lib/queries.ts and seed.sql both need this
   trend_score int not null default 0,     -- 0-100, shown as "98"
@@ -23,7 +24,7 @@ create table zones (
 -- RESTAURANTS — directory, detail page, dashboard
 -- ---------------------------------------------------------------------------
 create table restaurants (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   slug text unique not null,              -- for /restaurants/[id] friendly URLs
   name text not null,
   emoji text default '🍽️',                -- placeholder visual until real photos
@@ -51,7 +52,7 @@ create index idx_restaurants_status on restaurants(status);
 -- DISHES — trending dishes grid on homepage/trending page
 -- ---------------------------------------------------------------------------
 create table dishes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,                     -- "Dum Biryani"
   emoji text default '🍛',
   trend_label text,                       -- "+340% searches" / "New craze"
@@ -70,7 +71,7 @@ create table restaurant_dishes (
 -- INFLUENCERS — directory, profile v1/v2
 -- ---------------------------------------------------------------------------
 create table influencers (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   name text not null,
   handle text not null,                   -- "@rahulkitchens"
@@ -96,7 +97,7 @@ create index idx_influencers_rank on influencers(rank_this_week);
 
 -- Collaboration pricing tiers (influencer profile v2 "Collaboration pricing")
 create table influencer_pricing_tiers (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   influencer_id uuid references influencers(id) on delete cascade,
   tier_name text not null,                -- "Reel review"
   description text,
@@ -110,7 +111,7 @@ create table influencer_pricing_tiers (
 -- Influencer ↔ restaurant collaboration history (for "Restaurants reviewed recently",
 -- "Audience overlap", performance predictor)
 create table influencer_restaurant_posts (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   influencer_id uuid references influencers(id) on delete cascade,
   restaurant_id uuid references restaurants(id) on delete cascade,
   caption text,
@@ -128,7 +129,7 @@ create index idx_inf_posts_restaurant on influencer_restaurant_posts(restaurant_
 -- DEALS — exclusive FoodCulture deals (modal content, deals page)
 -- ---------------------------------------------------------------------------
 create table deals (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   restaurant_id uuid references restaurants(id) on delete cascade,
   code text not null,                     -- "FC-DBH-20"
   title text not null,                    -- "20% off your table tonight"
@@ -147,7 +148,7 @@ create index idx_deals_active on deals(active);
 -- REVIEWS — restaurant detail page review list
 -- ---------------------------------------------------------------------------
 create table reviews (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   restaurant_id uuid references restaurants(id) on delete cascade,
   reviewer_name text not null,
   rating int not null check (rating between 1 and 5),
@@ -162,7 +163,7 @@ create index idx_reviews_restaurant on reviews(restaurant_id);
 -- CONNECTION REQUESTS — "Connect with [influencer]" modal submissions
 -- ---------------------------------------------------------------------------
 create table connection_requests (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   influencer_id uuid references influencers(id),
   restaurant_name text not null,
   requester_name text not null,
@@ -176,7 +177,7 @@ create table connection_requests (
 -- ACTIVITY FEED — homepage "Live activity feed"
 -- ---------------------------------------------------------------------------
 create table activity_feed (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   restaurant_id uuid references restaurants(id),
   influencer_id uuid references influencers(id),
   message text not null,                  -- "<b>X</b> just went viral..."
@@ -188,7 +189,7 @@ create table activity_feed (
 -- NOTIFICATIONS — user notification centre
 -- ---------------------------------------------------------------------------
 create table notifications (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid,                           -- references auth.users(id) once auth is added
   title text not null,
   body text,

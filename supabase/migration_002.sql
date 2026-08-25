@@ -54,7 +54,7 @@ for each row execute function set_updated_at();
 -- USER ROLES — explicit role table for multi-role support
 -- ---------------------------------------------------------------------------
 create table user_roles (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references profiles(id) on delete cascade,
   role text not null,                     -- visitor | owner | admin
   granted_by uuid references profiles(id),
@@ -70,7 +70,7 @@ create policy "admins manage roles" on user_roles for all using (
 -- CATEGORIES — for restaurant categorisation + public category pages
 -- ---------------------------------------------------------------------------
 create table categories (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null unique,              -- "Biryani", "Street Food"
   slug text not null unique,              -- "biryani", "street-food"
   emoji text default '🍽️',
@@ -94,7 +94,7 @@ create policy "public read restaurant_categories" on restaurant_categories for s
 -- LOCATIONS — maps to zones, adds public location pages
 -- ---------------------------------------------------------------------------
 create table locations (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   zone_id uuid references zones(id),
   name text not null,                     -- "Koramangala 5th Block"
   slug text not null unique,              -- "koramangala-5th-block"
@@ -136,7 +136,7 @@ create policy "admins manage all listings" on restaurants for all
 -- LISTING IMAGES — Supabase Storage references
 -- ---------------------------------------------------------------------------
 create table listing_images (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   restaurant_id uuid not null references restaurants(id) on delete cascade,
   storage_path text not null,             -- path in Supabase Storage bucket
   url text,                               -- signed or public URL (cached)
@@ -159,7 +159,7 @@ create index idx_listing_images_restaurant on listing_images(restaurant_id);
 -- SAVED LISTINGS — user bookmarks
 -- ---------------------------------------------------------------------------
 create table saved_listings (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references profiles(id) on delete cascade,
   restaurant_id uuid not null references restaurants(id) on delete cascade,
   created_at timestamptz not null default now(),
@@ -174,7 +174,7 @@ create index idx_saved_listings_user on saved_listings(user_id);
 -- LISTING CLAIMS — allow users to claim an existing unclaimed listing
 -- ---------------------------------------------------------------------------
 create table listing_claims (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   restaurant_id uuid not null references restaurants(id) on delete cascade,
   claimant_id uuid not null references profiles(id),
   status text not null default 'pending', -- pending | approved | rejected
@@ -194,7 +194,7 @@ create policy "admins manage claims"  on listing_claims for all using (
 -- ENQUIRIES — contact/enquiry forms on listing detail pages
 -- ---------------------------------------------------------------------------
 create table enquiries (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   restaurant_id uuid not null references restaurants(id) on delete cascade,
   sender_name text not null,
   sender_email text not null,
@@ -219,7 +219,7 @@ create index idx_enquiries_restaurant on enquiries(restaurant_id);
 -- REVIEW REPORTS — flag a review for moderation
 -- ---------------------------------------------------------------------------
 create table review_reports (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   review_id uuid not null references reviews(id) on delete cascade,
   reporter_id uuid references profiles(id),
   reason text not null,
@@ -237,7 +237,7 @@ create policy "admins manage reports"    on review_reports for all using (
 -- ONBOARDING PROGRESS — track each step for new restaurant owners
 -- ---------------------------------------------------------------------------
 create table onboarding_progress (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references profiles(id) on delete cascade unique,
   step_profile_complete boolean default false,
   step_listing_created boolean default false,
@@ -260,7 +260,7 @@ for each row execute function set_updated_at();
 -- AUDIT LOGS — admin + security-sensitive action history
 -- ---------------------------------------------------------------------------
 create table audit_logs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   actor_id uuid references profiles(id),
   action text not null,                   -- "listing.approved", "user.role_changed" etc
   target_table text,
