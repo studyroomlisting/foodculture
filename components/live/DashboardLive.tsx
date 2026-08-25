@@ -18,13 +18,14 @@ export default function DashboardLive() {
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'influencers' | 'deals'>('overview')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
       const { data: r } = await (supabase as any)
         .from('restaurants')
-        .select('id,slug,name,emoji,area_label,cuisine_tags,price_tier,open_until,peak_hours,listing_status,intelligence_score,intelligence_score_trend,status,rating,total_reviews,ai_brief,avg_spend')
+        .select('id,slug,name,emoji,area_label,cuisine_tags,price_tier,open_until,peak_hours,listing_status,rejection_reason,intelligence_score,intelligence_score_trend,status,rating,total_reviews,ai_brief,avg_spend')
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false })
       const owned = r ?? []
@@ -45,6 +46,49 @@ export default function DashboardLive() {
     setPosts(ps)
     setDeals(ds)
     setLoading(false)
+  }
+
+  // ── Move a draft listing to pending_review — the button that was missing:
+  // listings created via /dashboard/listings/new started life as 'draft' with
+  // no way to advance them (only the post-signup onboarding wizard had a
+  // "Submit for review" action, and only for listings created there).
+  async function submitForReview() {
+    if (!selected) return
+    setSubmitting(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setSubmitting(false); return }
+
+    const { error } = await (supabase as any)
+      .from('restaurants')
+      .update({ listing_status: 'pending_review', submitted_at: new Date().toISOString() })
+      .eq('id', selected.id)
+      .eq('owner_id', user.id)
+
+    if (!error) {
+      const updated = { ...(selected as any), listing_status: 'pending_review' } as Restaurant
+      setSelected(updated)
+      setRestaurants(prev => prev.map(r => (r.id === updated.id ? updated : r)))
+
+      // Best-effort audit log + notification email — wrapped in try/catch since
+      // the Supabase query builder isn't a real Promise (no .catch()).
+      try {
+        await (supabase as any).from('audit_logs').insert([{
+          actor_id: user.id,
+          action: 'listing.submitted',
+          target_table: 'restaurants',
+          target_id: selected.id,
+          metadata: { restaurant_name: selected.name },
+        }])
+      } catch {}
+      try {
+        await fetch('/api/auth/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'listing_submitted', data: { restaurantName: selected.name } }),
+        })
+      } catch {}
+    }
+    setSubmitting(false)
   }
 
   return (
@@ -92,12 +136,44 @@ export default function DashboardLive() {
                   <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{selected.name}</h1>
                   <div style={{ fontSize: 13, color: '#888' }}>{selected.area_label} · {selected.price_tier} · ⭐ {selected.rating}</div>
                 </div>
+                <Link href={`/dashboard/listings/${selected.id}/edit`}
+                  style={{ marginLeft: 12, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 20, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#666', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                  ✏️ Edit listing
+                </Link>
                 <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                   <div style={{ fontSize: 28, fontWeight: 700, color: C.coral }}>{selected.intelligence_score}</div>
                   <div style={{ fontSize: 10, color: '#aaa' }}>AI Score</div>
                   <div style={{ fontSize: 11, color: C.green, fontWeight: 600 }}>+{selected.intelligence_score_trend} this week</div>
                 </div>
               </div>
+
+              {/* DRAFT — nudge to submit for review, and rejected — show why + let them resubmit */}
+              {(selected as any).listing_status === 'draft' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#FEF9F6', border: '1px solid #f5d5c0', borderRadius: 14, padding: '16px 20px', marginBottom: 24 }}>
+                  <span style={{ fontSize: 24 }}>📝</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>This listing is still a draft</div>
+                    <div style={{ fontSize: 13, color: '#888' }}>It's not visible to anyone yet. Add photos below (optional), then submit — our team reviews new listings within 24–48 hours.</div>
+                  </div>
+                  <button onClick={submitForReview} disabled={submitting}
+                    style={{ background: C.coral, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: submitting ? 0.7 : 1, whiteSpace: 'nowrap' }}>
+                    {submitting ? 'Submitting…' : 'Submit for review ✓'}
+                  </button>
+                </div>
+              )}
+              {(selected as any).listing_status === 'rejected' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 14, padding: '16px 20px', marginBottom: 24 }}>
+                  <span style={{ fontSize: 24 }}>⚠️</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2, color: '#dc2626' }}>This listing was rejected</div>
+                    <div style={{ fontSize: 13, color: '#888' }}>{(selected as any).rejection_reason || 'No reason was given.'} Update the details via Edit, then resubmit.</div>
+                  </div>
+                  <button onClick={submitForReview} disabled={submitting}
+                    style={{ background: C.coral, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: submitting ? 0.7 : 1, whiteSpace: 'nowrap' }}>
+                    {submitting ? 'Submitting…' : 'Resubmit ✓'}
+                  </button>
+                </div>
+              )}
 
               {/* KPI CARDS */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
