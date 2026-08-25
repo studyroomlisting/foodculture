@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FoodCulture AI — Bengaluru</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fff;color:#1a1a1a}
+:root{--o:#E85D26;--ol:#FEF0EA;--ob:#f5c4a8;--g:#2E9E55;--gl:#EAF8EE;--gd:#D4860A;--gdl:#FEF9EA;--pu:#7F77DD;--pul:#F3EFFE;--bd:#ede8e2;--mu:#999}
+
+/* NAV styles moved to inline style block above nav */
+
+.page{display:none}.page.on{display:block}
+
+/* HERO */
+.hero{background:linear-gradient(150deg,#1a0a00 0%,#2d1200 40%,#1a0800 100%);padding:56px 36px 44px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(232,93,38,.25) 0%,transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(245,166,35,.15) 0%,transparent 50%);pointer-events:none}
+.hbadge{display:inline-flex;align-items:center;gap:7px;background:rgba(232,93,38,.2);border:1px solid rgba(232,93,38,.4);border-radius:20px;padding:5px 14px;font-size:12px;color:#ffb38a;margin-bottom:20px;font-weight:500;position:relative}
+.bdot{width:7px;height:7px;background:#E85D26;border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.htitle{font-size:44px;font-weight:800;line-height:1.1;letter-spacing:-2px;margin-bottom:14px;color:#fff;position:relative}
+.htitle .o{color:#F5A623}.htitle .r{color:#E85D26}
+.hsub{font-size:15px;color:rgba(255,255,255,.6);max-width:440px;margin:0 auto 30px;line-height:1.65;position:relative}
+.sbar{max-width:520px;margin:0 auto 24px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:40px;display:flex;align-items:center;padding:6px 6px 6px 18px;gap:8px;backdrop-filter:blur(10px);position:relative}
+.sbar i{color:rgba(255,255,255,.5);font-size:17px;flex-shrink:0}
+.sbar input{background:none;border:none;outline:none;color:#fff;font-size:14px;flex:1;font-family:inherit}
+.sbar input::placeholder{color:rgba(255,255,255,.4)}
+.sbtn{background:var(--o);border:none;border-radius:32px;padding:9px 18px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;position:relative}
+.chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s}
+.chip:hover{background:rgba(232,93,38,.3);border-color:rgba(232,93,38,.5);color:#fff}
+.float-food{position:absolute;font-size:28px;opacity:.15;animation:floatup 8s infinite linear;pointer-events:none}
+@keyframes floatup{0%{transform:translateY(60px) rotate(0deg);opacity:.1}50%{opacity:.2}100%{transform:translateY(-80px) rotate(20deg);opacity:0}}
+
+/* LAYOUT */
+.sec{padding:32px 36px;max-width:1060px;margin:0 auto}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.sec-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:7px}
+.sec-title i{color:var(--o);font-size:18px}
+.sec-more{font-size:12px;color:var(--o);cursor:pointer;font-weight:600}
+.divider{height:1px;background:#f5ede5;margin:0 36px}
+
+/* ══ REVENUE 1: TREND REPORT BANNER ══ */
+.report-banner{background:linear-gradient(135deg,#1a0800,#3d1500);margin:0 36px;border-radius:16px;padding:22px 28px;display:flex;align-items:center;gap:20px;margin-bottom:0;cursor:pointer;transition:all .2s}
+.report-banner:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(232,93,38,.2)}
+.rb-icon{width:56px;height:56px;background:rgba(232,93,38,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;border:1px solid rgba(232,93,38,.3)}
+.rb-info{flex:1}
+.rb-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.rb-sub{font-size:12px;color:rgba(255,255,255,.55);line-height:1.5}
+.rb-price{text-align:right;flex-shrink:0}
+.rb-amount{font-size:22px;font-weight:800;color:#F5A623;line-height:1}
+.rb-label{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
+.rb-btn{background:var(--o);border:none;border-radius:20px;padding:8px 18px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px;white-space:nowrap}
+
+/* ══ REVENUE 2: DEALS SECTION ══ */
+.deals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.deal-card{background:#fff;border:1px solid var(--bd);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.deal-card:hover{border-color:var(--o);box-shadow:0 6px 24px rgba(232,93,38,.1);transform:translateY(-2px)}
+.deal-top{padding:14px;background:linear-gradient(135deg,#fff5f0,#ffe8d8);position:relative}
+.deal-emoji{font-size:36px;margin-bottom:6px}
+.deal-badge{position:absolute;top:10px;right:10px;background:var(--o);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:10px;display:flex;align-items:center;gap:4px}
+.deal-timer{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px;display:flex;align-items:center;gap:4px}
+.deal-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.deal-area{font-size:11px;color:var(--mu);margin-bottom:0}
+.deal-body{padding:12px 14px}
+.deal-offer{font-size:14px;font-weight:700;color:var(--o);margin-bottom:4px}
+.deal-desc{font-size:11px;color:#666;margin-bottom:10px;line-height:1.5}
+.deal-bottom{display:flex;align-items:center;justify-content:space-between}
+.deal-saving{font-size:11px;color:var(--g);font-weight:600}
+.deal-btn{background:var(--o);border:none;border-radius:10px;padding:7px 14px;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.deal-exclusive{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--o);font-weight:600;margin-bottom:8px}
+
+/* ══ REVENUE 3: SPONSORED CARDS ══ */
+.sponsored-tag{display:inline-flex;align-items:center;gap:3px;background:#f5f0ea;color:#aaa;font-size:9px;font-weight:600;padding:2px 7px;border-radius:6px;margin-bottom:6px;letter-spacing:.3px}
+
+/* ══ REELS ══ */
+.reels-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.reel{border-radius:16px;overflow:hidden;position:relative;cursor:pointer;aspect-ratio:.65;transition:transform .2s}
+.reel:hover{transform:scale(1.02)}
+.reel-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:52px}
+.reel-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,rgba(0,0,0,.1) 50%,transparent 100%)}
+.reel-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.reel-play i{font-size:18px;color:#1a1a1a;margin-left:2px}
+.reel-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px}
+.reel-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
+.reel-sub{font-size:10px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px}
+.reel-views{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.5);border-radius:10px;padding:3px 8px;font-size:10px;color:#fff;font-weight:600;display:flex;align-items:center;gap:4px}
+
+/* ══ INSTA POSTS ══ */
+.insta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.insta-card{background:#fff;border:1px solid var(--bd);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s}
+.insta-card:hover{border-color:var(--o);box-shadow:0 6px 24px rgba(232,93,38,.1);transform:translateY(-2px)}
+.insta-header{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.insta-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid var(--o)}
+.insta-uname{font-size:12px;font-weight:700}
+.insta-time{font-size:10px;color:var(--mu)}
+.insta-img{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative;overflow:hidden}
+.insta-body{padding:12px 14px}
+.insta-caption{font-size:12px;color:#333;line-height:1.55;margin-bottom:8px}
+.insta-actions{display:flex;align-items:center;gap:12px}
+.insta-action{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mu)}
+.insta-action i{font-size:14px}
+.insta-action.liked{color:#E85D26}
+.insta-tag{display:inline-block;background:var(--ol);color:var(--o);font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;margin-top:6px}
+
+/* ══ MOMENT GRID ══ */
+.moment-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+.moment-card{border-radius:18px;overflow:hidden;position:relative;cursor:pointer;transition:transform .2s}
+.moment-card:hover{transform:scale(1.01)}
+.moment-card.tall{grid-row:span 2}
+.mc-bg{width:100%;height:100%;min-height:200px;display:flex;align-items:center;justify-content:center;font-size:80px}
+.mc-bg.sm{font-size:52px;min-height:140px}
+.mc-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,rgba(0,0,0,.2) 50%,transparent 100%)}
+.mc-content{position:absolute;bottom:0;left:0;right:0;padding:16px}
+.mc-tag{display:inline-flex;align-items:center;gap:4px;background:var(--o);color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:8px;margin-bottom:6px}
+.mc-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
+.mc-sub{font-size:11px;color:rgba(255,255,255,.7)}
+
+/* ══ PEOPLE ROW ══ */
+.people-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pcard{border-radius:14px;overflow:hidden;position:relative;cursor:pointer;transition:transform .2s}
+.pcard:hover{transform:translateY(-3px)}
+.pcard-bg{aspect-ratio:.8;display:flex;align-items:center;justify-content:center;font-size:40px;position:relative}
+.pcard-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 60%)}
+.pcard-bottom{position:absolute;bottom:0;left:0;right:0;padding:10px}
+.pcard-name{font-size:11px;font-weight:700;color:#fff}
+.pcard-sub{font-size:9px;color:rgba(255,255,255,.7)}
+
+/* ══ RESTAURANT CARDS ══ */
+.r6{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.rcard{background:#fff;border:1px solid var(--bd);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s}
+.rcard:hover{border-color:var(--o);box-shadow:0 6px 24px rgba(232,93,38,.1);transform:translateY(-2px)}
+.rcard-img{height:110px;display:flex;align-items:center;justify-content:center;font-size:44px;position:relative;overflow:hidden}
+.rcard-badges{position:absolute;top:8px;right:8px;display:flex;gap:4px}
+.rcard-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px}
+.rcard-badge.v{background:var(--o);color:#fff}
+.rcard-badge.r{background:var(--g);color:#fff}
+.rcard-badge.n{background:var(--gd);color:#fff}
+.rcard-badge.sp{background:#1a1a1a;color:#F5A623}
+.rcard-info{padding:13px}
+.rcard-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.rcard-area{font-size:11px;color:var(--mu);margin-bottom:8px;display:flex;align-items:center;gap:3px}
+.rcard-bottom{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.rcard-score{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:700}
+.rcard-score i{font-size:11px;color:#F5A623}
+.rcard-inf{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--mu)}
+.rcard-inf i{font-size:11px;color:var(--o)}
+.rcard-bar{height:3px;background:#f5f0eb;border-radius:3px;margin-bottom:10px}
+.rbfill{height:100%;border-radius:3px}
+/* Book button on restaurant card */
+.rcard-actions{display:flex;gap:6px}
+.book-btn{flex:1;background:var(--o);border:none;border-radius:8px;padding:7px 0;color:#fff;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
+.book-btn:hover{background:#d44e1f}
+.notify-btn{flex:1;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:7px 0;color:#666;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
+.notify-btn:hover{border-color:var(--o);color:var(--o)}
+
+/* ══ DISH CARDS ══ */
+.dish-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.dcard{border-radius:14px;overflow:hidden;position:relative;cursor:pointer;transition:all .2s;aspect-ratio:.9}
+.dcard:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.dcard-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:52px}
+.dcard-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 55%)}
+.dcard-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px}
+.dcard-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:2px}
+.dcard-tag{font-size:10px;color:rgba(255,200,100,1);font-weight:600}
+.dcard-count{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+
+/* ══ INFLUENCER CARDS ══ */
+.inf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.icard{background:#fff;border:1px solid var(--bd);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s}
+.icard:hover{border-color:var(--o);box-shadow:0 6px 20px rgba(232,93,38,.09)}
+.icard-top{height:80px;display:flex;align-items:center;justify-content:center;font-size:42px;position:relative}
+.icard-av{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);width:48px;height:48px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+.icard-body{padding:28px 16px 16px;text-align:center}
+.icard-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.icard-handle{font-size:11px;color:var(--mu);margin-bottom:10px}
+.icard-score-row{display:flex;justify-content:center;gap:16px;margin-bottom:10px}
+.icard-score{text-align:center}
+.icard-score-num{font-size:18px;font-weight:700;color:var(--o)}
+.icard-score-lbl{font-size:9px;color:var(--mu)}
+.icard-tags{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.icard-tag{background:#f5f0ea;border-radius:8px;padding:3px 9px;font-size:10px;color:#666}
+/* Connect button */
+.connect-btn{width:100%;background:linear-gradient(135deg,var(--o),#d44e1f);border:none;border-radius:10px;padding:9px;font-size:12px;color:#fff;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:6px}
+.connect-price{font-size:10px;color:var(--mu);text-align:center}
+
+/* ══ LIVE FEED ══ */
+.feed-list{display:flex;flex-direction:column;gap:10px}
+.feed-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:12px;border:1px solid var(--bd);cursor:pointer;transition:all .15s}
+.feed-item:hover{border-color:var(--o);background:var(--ol)}
+.feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:blink 1.5s infinite}
+.feed-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.feed-text{flex:1;font-size:13px;line-height:1.45}
+.feed-text strong{font-weight:700}
+.feed-time{font-size:11px;color:var(--mu);flex-shrink:0}
+
+/* ══ ZONES ══ */
+.zone-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.zcard{border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s}
+.zcard:hover{transform:translateY(-3px)}
+.zcard-emoji{font-size:28px;margin-bottom:8px}
+.zcard-name{font-size:13px;font-weight:700;margin-bottom:5px}
+.zcard-score{font-size:26px;font-weight:800;line-height:1}
+.zcard-label{font-size:9px;margin-top:4px;opacity:.7;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+/* ══ REVENUE 4: BRAND INTELLIGENCE BANNER ══ */
+.brand-banner{background:linear-gradient(135deg,#0a0a1a,#1a1a3d);margin:0 36px;border-radius:16px;padding:24px 28px;display:flex;align-items:center;gap:20px;cursor:pointer;transition:all .2s}
+.brand-banner:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(127,119,221,.2)}
+.bb-icon{width:56px;height:56px;background:rgba(127,119,221,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;border:1px solid rgba(127,119,221,.3)}
+.bb-info{flex:1}
+.bb-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.bb-sub{font-size:12px;color:rgba(255,255,255,.5);line-height:1.5}
+.bb-logos{display:flex;gap:8px;margin-top:10px}
+.bb-logo{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.5);font-weight:600}
+.bb-cta{text-align:right;flex-shrink:0}
+.bb-price{font-size:20px;font-weight:800;color:var(--pu);line-height:1}
+.bb-price-lbl{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;margin-bottom:8px}
+.bb-btn{background:var(--pu);border:none;border-radius:20px;padding:8px 18px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* ══ FOOTER ══ */
+.footer-cta{background:linear-gradient(135deg,#1a0800,#2d1200);padding:52px 36px;text-align:center}
+.fct{font-size:30px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:10px;line-height:1.2}
+.fct span{color:#F5A623}
+.fcs{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:26px}
+.fbtns{display:flex;gap:12px;justify-content:center}
+.fbp{background:var(--o);border:none;border-radius:24px;padding:13px 28px;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.fbs{background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:13px 28px;color:rgba(255,255,255,.6);font-size:14px;cursor:pointer}
+.foot-bottom{background:#0f0500;padding:18px 36px;display:flex;align-items:center;justify-content:space-between}
+.fb-logo{display:flex;align-items:center;gap:7px}
+.fb-ball{width:24px;height:24px;background:var(--o);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.fb-ball i{font-size:11px;color:#fff}
+.fb-text{font-size:13px;font-weight:700;color:#fff}.fb-text span{color:var(--o)}
+.fb-copy{font-size:11px;color:#444}
+
+/* ══ SEARCH RESULTS ══ */
+.sr-wrap{max-width:1060px;margin:0 auto;padding:28px 36px}
+.ai-result-box{background:linear-gradient(135deg,#1a0800,#2d1500);border-radius:16px;padding:22px 24px;margin-bottom:24px}
+.ai-result-label{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(232,93,38,.8);font-weight:600;margin-bottom:8px}
+.ai-result-query{font-size:16px;font-weight:700;color:#fff;margin-bottom:12px}
+.ai-result-text{font-size:14px;color:rgba(255,255,255,.7);line-height:1.65;padding:14px 16px;background:rgba(255,255,255,.06);border-radius:10px;border:1px solid rgba(232,93,38,.2)}
+.filter-row{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap}
+.fb2{background:#fff;border:1px solid var(--bd);border-radius:20px;padding:6px 14px;font-size:12px;color:#666;cursor:pointer;font-weight:500}
+.fb2.on{background:var(--o);border-color:var(--o);color:#fff}
+.sr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+
+/* ══ RESTAURANT DETAIL ══ */
+.rd-hero{background:linear-gradient(135deg,#1a0800,#2d1200);padding:32px 36px;max-width:1060px;margin:0 auto}
+.rd-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.6);cursor:pointer;margin-bottom:18px;font-weight:600}
+.rd-header{display:flex;gap:18px;align-items:flex-start}
+.rd-emoji-box{width:80px;height:80px;background:rgba(232,93,38,.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:38px;flex-shrink:0;border:1px solid rgba(232,93,38,.3)}
+.rd-meta{flex:1}
+.rd-name{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;color:#fff}
+.rd-sub{font-size:13px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+.rd-tags{display:flex;gap:6px;flex-wrap:wrap}
+.rd-tag{background:rgba(255,255,255,.08);border-radius:8px;padding:4px 10px;font-size:11px;color:rgba(255,255,255,.6)}
+.rd-score-box{text-align:center;padding:14px 20px;background:rgba(232,93,38,.15);border:1px solid rgba(232,93,38,.3);border-radius:14px;flex-shrink:0}
+.rd-score-num{font-size:36px;font-weight:800;color:var(--o);line-height:1}
+.rd-score-lbl{font-size:10px;color:rgba(255,255,255,.5);margin-top:3px}
+.rd-score-trend{font-size:11px;color:#4ade80;font-weight:700;margin-top:4px}
+.rd-book-row{display:flex;gap:10px;margin-top:16px}
+.rd-book-btn{flex:1;background:var(--o);border:none;border-radius:12px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.rd-deal-btn{flex:1;background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);border-radius:12px;padding:12px;color:#4ade80;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.rd-notify-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px 18px;color:rgba(255,255,255,.7);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+
+.rd-body{max-width:1060px;margin:0 auto;padding:26px 36px;display:grid;grid-template-columns:2fr 1fr;gap:22px}
+.rd-section{margin-bottom:22px}
+.rds-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.rds-title i{color:var(--o)}
+.brief-box{background:var(--ol);border:1px solid var(--ob);border-radius:12px;padding:18px;font-size:14px;color:#444;line-height:1.7}
+.brief-ai{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--o);font-weight:600;margin-bottom:8px}
+.vid-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.vthumb{border-radius:12px;overflow:hidden;position:relative;cursor:pointer;transition:transform .2s}
+.vthumb:hover{transform:scale(1.03)}
+.vthumb-bg{aspect-ratio:.75;display:flex;align-items:center;justify-content:center;font-size:36px}
+.vthumb-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%)}
+.vthumb-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:32px;height:32px;background:rgba(255,255,255,.85);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.vthumb-play i{font-size:14px;margin-left:2px}
+.vthumb-bottom{position:absolute;bottom:0;left:0;right:0;padding:8px}
+.vthumb-name{font-size:10px;font-weight:700;color:#fff}
+.vthumb-views{font-size:9px;color:rgba(255,255,255,.7)}
+.review-list{display:flex;flex-direction:column;gap:9px}
+.rev-item{background:#fafafa;border:1px solid var(--bd);border-radius:10px;padding:12px}
+.rev-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.rev-name{font-size:12px;font-weight:700}
+.rev-stars{display:flex;gap:1px}
+.rev-stars i{font-size:11px;color:#F5A623}
+.rev-text{font-size:12px;color:#555;line-height:1.55}
+.rev-tag{display:inline-flex;align-items:center;gap:3px;background:var(--gl);color:var(--g);font-size:10px;font-weight:600;padding:2px 7px;border-radius:7px;margin-top:5px}
+.side-card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:15px;margin-bottom:13px}
+.sc-title{font-size:12px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:5px}
+.sc-title i{color:var(--o)}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f0ea}
+.mrow:last-child{border-bottom:none}
+.ml{font-size:12px;color:#666}.mv{font-size:12px;font-weight:700}
+.inf-mention{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f5f0ea}
+.inf-mention:last-child{border-bottom:none}
+.im-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.im-name{font-size:12px;font-weight:600}
+.im-sub{font-size:10px;color:var(--mu)}
+.im-score{font-size:12px;font-weight:700;color:var(--o)}
+
+/* ══ REVENUE 5: EXCLUSIVE DEAL on detail page ══ */
+.active-deal-box{background:linear-gradient(135deg,#0a2d10,#1a5520);border:1px solid rgba(76,175,80,.3);border-radius:14px;padding:16px;margin-bottom:14px}
+.adb-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.adb-icon{font-size:20px}
+.adb-title{font-size:13px;font-weight:700;color:#4ade80}
+.adb-timer{margin-left:auto;background:rgba(76,175,80,.2);border-radius:8px;padding:3px 8px;font-size:11px;color:#4ade80;font-weight:600}
+.adb-offer{font-size:16px;font-weight:800;color:#fff;margin-bottom:4px}
+.adb-desc{font-size:11px;color:rgba(255,255,255,.6);margin-bottom:10px}
+.adb-claim{width:100%;background:#4ade80;border:none;border-radius:10px;padding:9px;color:#0a2d10;font-size:13px;font-weight:700;cursor:pointer}
+
+/* ══ INFLUENCER DIR ══ */
+.inf-dir-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.idc{background:#fff;border:1px solid var(--bd);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s}
+.idc:hover{border-color:var(--o);box-shadow:0 6px 22px rgba(232,93,38,.09);transform:translateY(-2px)}
+.idc-top{height:88px;display:flex;align-items:center;justify-content:center;font-size:40px;position:relative}
+.idc-av{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);width:50px;height:50px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700}
+.idc-body{padding:28px 16px 16px;text-align:center}
+.idc-rank{display:inline-flex;align-items:center;gap:3px;background:var(--ol);color:var(--o);font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;margin-bottom:8px}
+.idc-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.idc-handle{font-size:11px;color:var(--mu);margin-bottom:10px}
+.idc-tags{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.idc-tag{background:#f5f0ea;border-radius:7px;padding:3px 8px;font-size:10px;color:#666}
+.idc-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--bd);padding-top:11px;margin-bottom:12px}
+.idc-stat{text-align:center}
+.idc-stat:not(:last-child){border-right:1px solid var(--bd)}
+.ids-val{font-size:13px;font-weight:700}
+.ids-lbl{font-size:9px;color:#bbb;margin-top:1px}
+.idc-connect{width:100%;background:linear-gradient(135deg,var(--o),#d44e1f);border:none;border-radius:10px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:5px}
+.idc-price{font-size:10px;color:var(--mu);text-align:center}
+
+/* ══ DASHBOARD ══ */
+.dash-wrap{max-width:1060px;margin:0 auto;padding:26px 36px}
+.dash-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.dash-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.dash-title span{color:var(--o)}
+.dash-date{font-size:12px;color:var(--mu);margin-top:3px}
+.export-btn{background:var(--o);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.dash-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:22px}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:13px;padding:17px}
+.kpi-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+.kpi-num{font-size:25px;font-weight:800;letter-spacing:-.5px;margin-bottom:2px}
+.kpi-label{font-size:11px;color:var(--mu)}
+.kpi-change{font-size:11px;font-weight:600;margin-top:4px}
+.kpi-change.up{color:var(--g)}.kpi-change.dn{color:var(--o)}
+.dash-2{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px}
+.dc{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:18px}
+.dc-title{font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.dc-title i{color:var(--o)}
+.chart-bars{display:flex;align-items:flex-end;gap:7px;height:110px}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bf{width:100%;border-radius:4px 4px 0 0;background:var(--o);opacity:.7;cursor:pointer}
+.bf:hover{opacity:1}
+.bl{font-size:9px;color:var(--mu)}
+.comp-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f5f0ea}
+.comp-row:last-child{border-bottom:none}
+.cr-rank{width:18px;font-size:12px;font-weight:700;color:var(--o)}
+.cr-name{font-size:12px;font-weight:600;flex:1}
+.cr-bar-wrap{width:80px}
+.cr-bar{height:4px;background:#f0e8e0;border-radius:3px;margin-bottom:2px}
+.cr-fill{height:100%;border-radius:3px;background:var(--o)}
+.cr-num{font-size:10px;color:var(--mu);text-align:right}
+.insight-list{display:flex;flex-direction:column;gap:8px}
+.ii{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.55}
+.ii.good{background:var(--gl);color:#1a4a2a}
+.ii.warn{background:#FEF9EA;color:#5a3a00}
+.ii.info{background:var(--ol);color:#5a2a00}
+.ii-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+
+/* ══ REVENUE 6: PREMIUM MENU ANALYSER ══ */
+.premium-lock{background:linear-gradient(135deg,#f5f0ff,#ede5ff);border:1px solid rgba(127,119,221,.2);border-radius:14px;padding:24px;text-align:center;position:relative;overflow:hidden;margin-bottom:18px}
+.premium-lock::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(127,119,221,.05));pointer-events:none}
+.pl-lock{font-size:32px;margin-bottom:10px}
+.pl-title{font-size:15px;font-weight:700;color:var(--pu);margin-bottom:6px}
+.pl-sub{font-size:12px;color:#666;margin-bottom:16px;line-height:1.55}
+.pl-btn{background:var(--pu);border:none;border-radius:12px;padding:10px 24px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.pl-price{font-size:11px;color:#888;margin-top:8px}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:20px;padding:28px;width:380px;max-width:90vw;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:20px;color:#aaa}
+.modal-icon{font-size:40px;text-align:center;margin-bottom:12px}
+.modal-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:6px}
+.modal-sub{font-size:13px;color:#666;text-align:center;margin-bottom:20px;line-height:1.55}
+.modal-input{width:100%;border:1.5px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;outline:none;margin-bottom:10px}
+.modal-input:focus{border-color:var(--o)}
+.modal-select{width:100%;border:1.5px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;outline:none;margin-bottom:16px;background:#fff}
+.modal-btn{width:100%;background:var(--o);border:none;border-radius:12px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.modal-note{font-size:11px;color:#aaa;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ NAV ══════════════ -->
+<style>
+/* ── ANIMATED NAV ── */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-bottom:none;background:#fff;position:sticky;top:0;z-index:200;height:64px;box-shadow:0 2px 20px rgba(0,0,0,.06)}
+.nlogo{display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0}
+.nball{width:32px;height:32px;background:var(--o);border-radius:50%;display:flex;align-items:center;justify-content:center;animation:logopulse 3s ease-in-out infinite}
+@keyframes logopulse{0%,100%{box-shadow:0 0 0 0 rgba(232,93,38,.4)}50%{box-shadow:0 0 0 8px rgba(232,93,38,0)}}
+.nball i{font-size:15px;color:#fff}
+.ntext{font-size:15px;font-weight:800;color:#1a1a1a;letter-spacing:-.3px}.ntext span{color:var(--o)}
+
+/* NAV TABS */
+.ntabs{display:flex;gap:4px;background:#f7f4f1;border-radius:16px;padding:5px}
+.ntab{display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:12px;cursor:pointer;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:#888;transition:all .25s cubic-bezier(.34,1.56,.64,1);position:relative;white-space:nowrap}
+.ntab:hover{color:#1a1a1a;background:rgba(255,255,255,.8);transform:translateY(-1px)}
+.ntab.act{color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.ntab .nti{font-size:16px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px}
+.ntab:hover .nti{transform:scale(1.2) rotate(-5deg)}
+.ntab.act .nti{transform:scale(1.1)}
+
+/* Each tab active colour */
+.ntab.t-explore.act{background:linear-gradient(135deg,#E85D26,#ff8c5a)}
+.ntab.t-trending.act{background:linear-gradient(135deg,#E85D26,#F5A623)}
+.ntab.t-inf.act{background:linear-gradient(135deg,#7F77DD,#b8b0ff)}
+.ntab.t-rest.act{background:linear-gradient(135deg,#2E9E55,#5dd68a)}
+
+/* Hover colours */
+.ntab.t-explore:hover .nti{color:#E85D26}
+.ntab.t-trending:hover .nti{color:#F5A623}
+.ntab.t-inf:hover .nti{color:#7F77DD}
+.ntab.t-rest:hover .nti{color:#2E9E55}
+
+/* Notification dot on Trending */
+.ntab .ndot{position:absolute;top:6px;right:10px;width:7px;height:7px;background:#E85D26;border-radius:50%;border:1.5px solid #f7f4f1;animation:blink 2s infinite}
+
+/* CTA */
+.ncta{background:linear-gradient(135deg,#E85D26,#F5A623);color:#fff;border:none;border-radius:20px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(232,93,38,.3);flex-shrink:0}
+.ncta:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(232,93,38,.4)}
+</style>
+
+<nav class="nav">
+  <div class="nlogo" onclick="go('home')">
+    <div class="nball"><i class="ti ti-flame"></i></div>
+    <span class="ntext">Food<span>Culture</span>.ai</span>
+  </div>
+
+  <div class="ntabs">
+    <button id="nl-home" class="ntab t-explore act" onclick="go('home')">
+      <span class="nti"><i class="ti ti-compass"></i></span>
+      Explore
+    </button>
+    <button id="nl-search" class="ntab t-trending" onclick="go('search')">
+      <span class="nti"><i class="ti ti-trending-up"></i></span>
+      Trending
+      <span class="ndot"></span>
+    </button>
+    <button id="nl-inf" class="ntab t-inf" onclick="go('inf')">
+      <span class="nti"><i class="ti ti-star"></i></span>
+      Influencers
+    </button>
+    <button id="nl-dash" class="ntab t-rest" onclick="go('dash')">
+      <span class="nti"><i class="ti ti-building-store"></i></span>
+      For Restaurants
+    </button>
+  </div>
+
+  <button class="ncta">&#9889; Get early access</button>
+</nav>
+
+<!-- ══════════════ HOME ══════════════ -->
+<div id="page-home" class="page on">
+
+  <div class="hero">
+    <div class="float-food" style="left:8%;animation-delay:0s;animation-duration:9s">🍛</div>
+    <div class="float-food" style="left:20%;animation-delay:2s;animation-duration:11s">🌶️</div>
+    <div class="float-food" style="left:75%;animation-delay:1s;animation-duration:8s">🍜</div>
+    <div class="float-food" style="left:88%;animation-delay:3s;animation-duration:10s">🧆</div>
+    <div class="float-food" style="left:55%;animation-delay:4s;animation-duration:12s">🥘</div>
+    <div class="hbadge"><span class="bdot"></span> Live · Bengaluru food intelligence</div>
+    <h1 class="htitle">Find what's <span class="o">sizzling</span><br>in Bengaluru <span class="r">right now</span></h1>
+    <p class="hsub">Discover viral restaurants, trending dishes and the influencers driving Bengaluru's food scene — powered by real-time AI.</p>
+    <div class="sbar">
+      <i class="ti ti-search"></i>
+      <input id="hs" type="text" placeholder="Best biryani near Koramangala tonight..." onkeydown="if(event.key==='Enter')srch()"/>
+      <button class="sbtn" onclick="srch()"><i class="ti ti-sparkles"></i> Ask AI</button>
+    </div>
+    <div class="chips">
+      <span class="chip" onclick="srch('Viral restaurants this week')">🔥 Viral this week</span>
+      <span class="chip" onclick="srch('Best food Koramangala')">📍 Koramangala</span>
+      <span class="chip" onclick="srch('Best biryani Bengaluru')">🍛 Biryani spots</span>
+      <span class="chip" onclick="srch('Late night food')">🌙 Late night</span>
+      <span class="chip" onclick="srch('New restaurants rising fast')">⭐ Rising fast</span>
+      <span class="chip" onclick="srch('Influencer recommended')">🎥 Influencer picks</span>
+    </div>
+  </div>
+
+  <!-- TREND REPORT BANNER -->
+  <div style="padding:24px 36px 0">
+    <div class="report-banner" onclick="showModal('report')">
+      <div class="rb-icon">📊</div>
+      <div class="rb-info">
+        <div class="rb-title">📬 This Week's Bengaluru Food Trend Report is Ready</div>
+        <div class="rb-sub">Which restaurants went viral · Which dishes are rising · Which influencers drove the most footfall this week · Neighbourhood heat index</div>
+      </div>
+      <div class="rb-price">
+        <div class="rb-amount">₹199</div>
+        <div class="rb-label">/ one-time</div>
+        <button class="rb-btn">Download report →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REELS -->
+  <div class="sec">
+    <div class="sec-head">
+      <span class="sec-title"><i class="ti ti-player-play"></i> People are loving this right now</span>
+      <a class="sec-more">See all videos →</a>
+    </div>
+    <div class="reels-row">
+      <div class="reel" onclick="go('restaurant')"><div class="reel-bg" style="background:linear-gradient(135deg,#2d0a00,#6b1a00)">🍜</div><div class="reel-overlay"></div><div class="reel-play"><i class="ti ti-player-play-filled"></i></div><div class="reel-views"><i class="ti ti-eye" style="font-size:10px"></i> 48K</div><div class="reel-bottom"><div class="reel-name">Dum Biryani House</div><div class="reel-sub"><i class="ti ti-brand-instagram" style="font-size:10px"></i> @rahulkitchens · 2 days ago</div></div></div>
+      <div class="reel" onclick="go('restaurant')"><div class="reel-bg" style="background:linear-gradient(135deg,#0a2d00,#1a5500)">🥘</div><div class="reel-overlay"></div><div class="reel-play"><i class="ti ti-player-play-filled"></i></div><div class="reel-views"><i class="ti ti-eye" style="font-size:10px"></i> 22K</div><div class="reel-bottom"><div class="reel-name">Chettinad Corner</div><div class="reel-sub"><i class="ti ti-brand-instagram" style="font-size:10px"></i> @spiceandfork · 5 days ago</div></div></div>
+      <div class="reel" onclick="go('restaurant')"><div class="reel-bg" style="background:linear-gradient(135deg,#2d1a00,#5a3000)">🧆</div><div class="reel-overlay"></div><div class="reel-play"><i class="ti ti-player-play-filled"></i></div><div class="reel-views"><i class="ti ti-eye" style="font-size:10px"></i> 18K</div><div class="reel-bottom"><div class="reel-name">Street Masala Co.</div><div class="reel-sub"><i class="ti ti-brand-youtube" style="font-size:10px"></i> @tastechronicles · 3 days ago</div></div></div>
+      <div class="reel" onclick="go('restaurant')"><div class="reel-bg" style="background:linear-gradient(135deg,#1a0030,#350060)">🍕</div><div class="reel-overlay"></div><div class="reel-play"><i class="ti ti-player-play-filled"></i></div><div class="reel-views"><i class="ti ti-eye" style="font-size:10px"></i> 31K</div><div class="reel-bottom"><div class="reel-name">Pizza Collective</div><div class="reel-sub"><i class="ti ti-brand-instagram" style="font-size:10px"></i> @blrfoodie · 1 day ago</div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- EXCLUSIVE DEALS -->
+  <div class="sec">
+    <div class="sec-head">
+      <span class="sec-title"><i class="ti ti-ticket"></i> Exclusive FoodCulture deals · Tonight only</span>
+      <a class="sec-more">View all deals →</a>
+    </div>
+    <div class="deals-grid">
+      <div class="deal-card" onclick="showModal('deal1')">
+        <div class="deal-top" style="background:linear-gradient(135deg,#fff5f0,#ffe0d0)">
+          <div class="deal-emoji">🍜</div>
+          <div class="deal-badge"><i class="ti ti-bolt" style="font-size:10px"></i> EXCLUSIVE</div>
+          <div class="deal-timer"><i class="ti ti-clock" style="font-size:9px"></i> 4h 22m left</div>
+          <div class="deal-name">Dum Biryani House</div>
+          <div class="deal-area">📍 Koramangala</div>
+        </div>
+        <div class="deal-body">
+          <div class="deal-exclusive"><i class="ti ti-lock-open" style="font-size:10px"></i> FoodCulture exclusive</div>
+          <div class="deal-offer">20% off entire table</div>
+          <div class="deal-desc">Valid tonight 6–9 PM only. Show this offer at the counter. No minimum order.</div>
+          <div class="deal-bottom">
+            <span class="deal-saving">Save up to ₹280</span>
+            <button class="deal-btn">Claim deal</button>
+          </div>
+        </div>
+      </div>
+      <div class="deal-card" onclick="showModal('deal2')">
+        <div class="deal-top" style="background:linear-gradient(135deg,#f0fff5,#d0f0e0)">
+          <div class="deal-emoji">🥘</div>
+          <div class="deal-badge" style="background:var(--g)"><i class="ti ti-bolt" style="font-size:10px"></i> EXCLUSIVE</div>
+          <div class="deal-timer"><i class="ti ti-clock" style="font-size:9px"></i> 6h 10m left</div>
+          <div class="deal-name">Chettinad Corner</div>
+          <div class="deal-area">📍 Indiranagar</div>
+        </div>
+        <div class="deal-body">
+          <div class="deal-exclusive"><i class="ti ti-lock-open" style="font-size:10px"></i> FoodCulture exclusive</div>
+          <div class="deal-offer">Free dessert with any main</div>
+          <div class="deal-desc">Get a complimentary Payasam or Ice Halwa with any main course. Dine-in only.</div>
+          <div class="deal-bottom">
+            <span class="deal-saving">Worth ₹120</span>
+            <button class="deal-btn" style="background:var(--g)">Claim deal</button>
+          </div>
+        </div>
+      </div>
+      <div class="deal-card" onclick="showModal('deal3')">
+        <div class="deal-top" style="background:linear-gradient(135deg,#f5f0ff,#e0d0ff)">
+          <div class="deal-emoji">🍕</div>
+          <div class="deal-badge" style="background:var(--pu)"><i class="ti ti-bolt" style="font-size:10px"></i> EXCLUSIVE</div>
+          <div class="deal-timer"><i class="ti ti-clock" style="font-size:9px"></i> 2h 45m left</div>
+          <div class="deal-name">Pizza Collective</div>
+          <div class="deal-area">📍 Whitefield</div>
+        </div>
+        <div class="deal-body">
+          <div class="deal-exclusive"><i class="ti ti-lock-open" style="font-size:10px"></i> FoodCulture exclusive</div>
+          <div class="deal-offer">Buy 1 get 1 free pizza</div>
+          <div class="deal-desc">Any two pizzas from the classic menu. Valid for dine-in and takeaway today only.</div>
+          <div class="deal-bottom">
+            <span class="deal-saving">Save up to ₹450</span>
+            <button class="deal-btn" style="background:var(--pu)">Claim deal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FOOD MOMENTS -->
+  <div class="sec">
+    <div class="sec-head">
+      <span class="sec-title"><i class="ti ti-camera"></i> Food moments this week</span>
+      <a class="sec-more">Explore more →</a>
+    </div>
+    <div class="moment-grid">
+      <div class="moment-card tall" onclick="go('restaurant')"><div class="mc-bg" style="background:linear-gradient(160deg,#2d0a00,#6b2000);min-height:300px">🍜</div><div class="mc-overlay"></div><div class="mc-content"><div class="mc-tag"><i class="ti ti-flame" style="font-size:10px"></i> VIRAL THIS WEEK</div><div class="mc-name">Dum Biryani House</div><div class="mc-sub">📍 Koramangala · 3 influencer posts</div></div></div>
+      <div class="moment-card" onclick="go('restaurant')"><div class="mc-bg sm" style="background:linear-gradient(135deg,#0a2d10,#1a6030)">🥘</div><div class="mc-overlay"></div><div class="mc-content"><div class="mc-tag">↑ RISING FAST</div><div class="mc-name">Chettinad Corner</div><div class="mc-sub">📍 Indiranagar</div></div></div>
+      <div class="moment-card" onclick="go('restaurant')"><div class="mc-bg sm" style="background:linear-gradient(135deg,#2d1a00,#6b4000)">🧆</div><div class="mc-overlay"></div><div class="mc-content"><div class="mc-tag">✦ HIDDEN GEM</div><div class="mc-name">Street Masala Co.</div><div class="mc-sub">📍 HSR Layout</div></div></div>
+      <div class="moment-card" onclick="go('restaurant')"><div class="mc-bg sm" style="background:linear-gradient(135deg,#1a0030,#4a0080)">🍕</div><div class="mc-overlay"></div><div class="mc-content"><div class="mc-tag">🔥 INFLUENCER FAV</div><div class="mc-name">Pizza Collective</div><div class="mc-sub">📍 Whitefield</div></div></div>
+      <div class="moment-card" onclick="go('restaurant')"><div class="mc-bg sm" style="background:linear-gradient(135deg,#00202d,#005570)">🍣</div><div class="mc-overlay"></div><div class="mc-content"><div class="mc-tag">✦ JUST OPENED</div><div class="mc-name">Sushi Studio BLR</div><div class="mc-sub">📍 MG Road</div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- INSTAGRAM POSTS -->
+  <div class="sec">
+    <div class="sec-head">
+      <span class="sec-title"><i class="ti ti-brand-instagram"></i> Latest influencer posts</span>
+      <a class="sec-more" onclick="go('inf')">View all influencers →</a>
+    </div>
+    <div class="insta-grid">
+      <div class="insta-card"><div class="insta-header"><div class="insta-av" style="background:#FEF0EA;color:var(--o)">RK</div><div><div class="insta-uname">@rahulkitchens</div><div class="insta-time">2 hours ago</div></div></div><div class="insta-img" style="background:linear-gradient(135deg,#2d0a00,#6b2000)">🍜</div><div class="insta-body"><div class="insta-caption"><strong>Dum Biryani House</strong> just changed my life 🤯 The slow-cooked dum is perfection. Get there early! 📍 Koramangala</div><div class="insta-actions"><span class="insta-action liked"><i class="ti ti-heart-filled"></i> 12.4K</span><span class="insta-action"><i class="ti ti-message-circle"></i> 843</span><span class="insta-action"><i class="ti ti-share"></i> 2.1K</span></div><span class="insta-tag">🔥 Drove 340 visits</span></div></div>
+      <div class="insta-card"><div class="insta-header"><div class="insta-av" style="background:var(--gl);color:var(--g)">SF</div><div><div class="insta-uname">@spiceandfork</div><div class="insta-time">1 day ago</div></div></div><div class="insta-img" style="background:linear-gradient(135deg,#0a2d10,#1a6030)">🥘</div><div class="insta-body"><div class="insta-caption">Chettinad Corner is quietly becoming the best South Indian in <strong>Indiranagar</strong>. The pepper chicken curry 🫶</div><div class="insta-actions"><span class="insta-action liked"><i class="ti ti-heart-filled"></i> 8.2K</span><span class="insta-action"><i class="ti ti-message-circle"></i> 521</span><span class="insta-action"><i class="ti ti-share"></i> 1.4K</span></div><span class="insta-tag">↑ Rising fast</span></div></div>
+      <div class="insta-card"><div class="insta-header"><div class="insta-av" style="background:var(--gdl);color:var(--gd)">BF</div><div><div class="insta-uname">@blrfoodie</div><div class="insta-time">3 days ago</div></div></div><div class="insta-img" style="background:linear-gradient(135deg,#2d1a00,#6b4000)">🧆</div><div class="insta-body"><div class="insta-caption">Found this hidden gem in HSR Layout 😍 <strong>Street Masala Co.</strong> — affordable, authentic, must visit!</div><div class="insta-actions"><span class="insta-action liked"><i class="ti ti-heart-filled"></i> 5.8K</span><span class="insta-action"><i class="ti ti-message-circle"></i> 389</span><span class="insta-action"><i class="ti ti-share"></i> 967</span></div><span class="insta-tag">✦ Hidden gem</span></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PEOPLE ENJOYING -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title"><i class="ti ti-users"></i> Bengaluru foodies are out tonight</span><a class="sec-more">See all moments →</a></div>
+    <div class="people-row">
+      <div class="pcard"><div class="pcard-bg" style="background:linear-gradient(135deg,#2d0a00,#7b2500)">🧑‍🍳<div class="pcard-overlay"></div></div><div class="pcard-bottom"><div class="pcard-name">Chef at work</div><div class="pcard-sub">Dum Biryani House</div></div></div>
+      <div class="pcard"><div class="pcard-bg" style="background:linear-gradient(135deg,#0a2000,#1e5500)">👨‍👩‍👧<div class="pcard-overlay"></div></div><div class="pcard-bottom"><div class="pcard-name">Family evening</div><div class="pcard-sub">Chettinad Corner</div></div></div>
+      <div class="pcard"><div class="pcard-bg" style="background:linear-gradient(135deg,#1a0030,#440080)">🎉<div class="pcard-overlay"></div></div><div class="pcard-bottom"><div class="pcard-name">Birthday night</div><div class="pcard-sub">Pizza Collective</div></div></div>
+      <div class="pcard"><div class="pcard-bg" style="background:linear-gradient(135deg,#001a2d,#004070)">☕<div class="pcard-overlay"></div></div><div class="pcard-bottom"><div class="pcard-name">Morning chai</div><div class="pcard-sub">Street Masala Co.</div></div></div>
+      <div class="pcard"><div class="pcard-bg" style="background:linear-gradient(135deg,#2d1500,#6b3500)">🍱<div class="pcard-overlay"></div></div><div class="pcard-bottom"><div class="pcard-name">Friday feast</div><div class="pcard-sub">Royal Hyderabadi</div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- TRENDING RESTAURANTS with Book + Notify buttons -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title"><i class="ti ti-flame"></i> Trending restaurants</span><a class="sec-more" onclick="srch('Trending restaurants Bengaluru')">View all →</a></div>
+    <div class="r6">
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#fff5f0,#ffe0d0)"><span style="font-size:40px">🍜</span><div class="rcard-badges"><span class="rcard-badge sp">★ Promoted</span></div></div>
+        <div class="rcard-info">
+          <div class="sponsored-tag"><i class="ti ti-ad" style="font-size:9px"></i> Sponsored</div>
+          <div class="rcard-name">Dum Biryani House</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> Koramangala · ₹₹</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.8</div><div class="rcard-inf"><i class="ti ti-brand-instagram"></i> 3 posts</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:94%;background:var(--o)"></div></div>
+          <div class="rcard-actions"><button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book table</button><button class="notify-btn" onclick="event.stopPropagation();showModal('notify')"><i class="ti ti-bell" style="font-size:11px"></i> Notify me</button></div>
+        </div>
+      </div>
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#f0fff5,#d0f0e0)"><span style="font-size:40px">🥘</span><div class="rcard-badges"><span class="rcard-badge r">↑ Rising</span></div></div>
+        <div class="rcard-info">
+          <div class="rcard-name">Chettinad Corner</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> Indiranagar · ₹₹₹</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.6</div><div class="rcard-inf"><i class="ti ti-brand-instagram"></i> 2 posts</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:78%;background:var(--g)"></div></div>
+          <div class="rcard-actions"><button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book table</button><button class="notify-btn" onclick="event.stopPropagation();showModal('notify')"><i class="ti ti-bell" style="font-size:11px"></i> Notify me</button></div>
+        </div>
+      </div>
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#fffdf0,#fff0c0)"><span style="font-size:40px">🧆</span><div class="rcard-badges"><span class="rcard-badge n">✦ New</span></div></div>
+        <div class="rcard-info">
+          <div class="rcard-name">Street Masala Co.</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> HSR Layout · ₹</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.5</div><div class="rcard-inf"><i class="ti ti-brand-instagram"></i> 1 post</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:63%;background:var(--gd)"></div></div>
+          <div class="rcard-actions"><button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book table</button><button class="notify-btn" onclick="event.stopPropagation();showModal('notify')"><i class="ti ti-bell" style="font-size:11px"></i> Notify me</button></div>
+        </div>
+      </div>
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#f5f0ff,#e0d0ff)"><span style="font-size:40px">🍕</span><div class="rcard-badges"><span class="rcard-badge v">🔥 Viral</span></div></div>
+        <div class="rcard-info">
+          <div class="rcard-name">Pizza Collective</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> Whitefield · ₹₹</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.7</div><div class="rcard-inf"><i class="ti ti-brand-instagram"></i> 2 posts</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:88%;background:var(--pu)"></div></div>
+          <div class="rcard-actions"><button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book table</button><button class="notify-btn" onclick="event.stopPropagation();showModal('notify')"><i class="ti ti-bell" style="font-size:11px"></i> Notify me</button></div>
+        </div>
+      </div>
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#f0fff5,#c0f0d0)"><span style="font-size:40px">🥗</span><div class="rcard-badges"><span class="rcard-badge r">↑ Rising</span></div></div>
+        <div class="rcard-info">
+          <div class="rcard-name">The Green Bowl</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> JP Nagar · ₹₹</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.4</div><div class="rcard-inf"><i class="ti ti-brand-instagram"></i> 1 post</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:70%;background:var(--g)"></div></div>
+          <div class="rcard-actions"><button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book table</button><button class="notify-btn" onclick="event.stopPropagation();showModal('notify')"><i class="ti ti-bell" style="font-size:11px"></i> Notify me</button></div>
+        </div>
+      </div>
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#f0f8ff,#c0e0ff)"><span style="font-size:40px">🍣</span><div class="rcard-badges"><span class="rcard-badge n">✦ New</span></div></div>
+        <div class="rcard-info">
+          <div class="rcard-name">Sushi Studio BLR</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> MG Road · ₹₹₹</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.5</div><div class="rcard-inf"><i class="ti ti-brand-instagram"></i> 1 post</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:58%;background:#2278cc"></div></div>
+          <div class="rcard-actions"><button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book table</button><button class="notify-btn" onclick="event.stopPropagation();showModal('notify')"><i class="ti ti-bell" style="font-size:11px"></i> Notify me</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- TRENDING DISHES -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title"><i class="ti ti-trending-up"></i> Trending dishes this week</span><a class="sec-more">View all →</a></div>
+    <div class="dish-grid">
+      <div class="dcard"><div class="dcard-bg" style="background:linear-gradient(135deg,#2d0a00,#7b2500)">🍛</div><div class="dcard-overlay"></div><div class="dcard-bottom"><div class="dcard-name">Dum Biryani</div><div class="dcard-tag">🔥 +340% searches</div><div class="dcard-count">48 restaurants</div></div></div>
+      <div class="dcard"><div class="dcard-bg" style="background:linear-gradient(135deg,#1a2d00,#4a7000)">🧇</div><div class="dcard-overlay"></div><div class="dcard-bottom"><div class="dcard-name">Masala Dosa</div><div class="dcard-tag">↑ Trending</div><div class="dcard-count">120 restaurants</div></div></div>
+      <div class="dcard"><div class="dcard-bg" style="background:linear-gradient(135deg,#00152d,#003060)">🍜</div><div class="dcard-overlay"></div><div class="dcard-bottom"><div class="dcard-name">Ramen BLR</div><div class="dcard-tag">✦ New craze</div><div class="dcard-count">22 restaurants</div></div></div>
+      <div class="dcard"><div class="dcard-bg" style="background:linear-gradient(135deg,#2d1000,#7b3000)">🥙</div><div class="dcard-overlay"></div><div class="dcard-bottom"><div class="dcard-name">Shawarma Rolls</div><div class="dcard-tag">🔥 +210% searches</div><div class="dcard-count">67 restaurants</div></div></div>
+      <div class="dcard"><div class="dcard-bg" style="background:linear-gradient(135deg,#1a0030,#4a0080)">🍦</div><div class="dcard-overlay"></div><div class="dcard-bottom"><div class="dcard-name">Kulfi Falooda</div><div class="dcard-tag">↑ Seasonal hit</div><div class="dcard-count">35 restaurants</div></div></div>
+      <div class="dcard"><div class="dcard-bg" style="background:linear-gradient(135deg,#002d1a,#006b40)">🥞</div><div class="dcard-overlay"></div><div class="dcard-bottom"><div class="dcard-name">Uttapam</div><div class="dcard-tag">↑ Rising</div><div class="dcard-count">88 restaurants</div></div></div>
+      <div class="dcard"><div class="dcard-bg" style="background:linear-gradient(135deg,#2d1a00,#5a3a00)">🍔</div><div class="dcard-overlay"></div><div class="dcard-bottom"><div class="dcard-name">Smash Burgers</div><div class="dcard-tag">✦ New craze</div><div class="dcard-count">18 restaurants</div></div></div>
+      <div class="dcard"><div class="dcard-bg" style="background:linear-gradient(135deg,#002020,#005555)">🧆</div><div class="dcard-overlay"></div><div class="dcard-bottom"><div class="dcard-name">Chettinad Curry</div><div class="dcard-tag">↑ +95% searches</div><div class="dcard-count">29 restaurants</div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- INFLUENCERS with Connect button -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title"><i class="ti ti-star"></i> Top food influencers this week</span><a class="sec-more" onclick="go('inf')">View all →</a></div>
+    <div class="inf-grid">
+      <div class="icard">
+        <div class="icard-top" style="background:linear-gradient(135deg,#2d0a00,#7b2500)">🍜<div class="icard-av" style="background:#FEF0EA;color:var(--o)">RK</div></div>
+        <div class="icard-body">
+          <div class="icard-name">Rahul Kitchens</div>
+          <div class="icard-handle">@rahulkitchens · 480K</div>
+          <div class="icard-score-row"><div class="icard-score"><div class="icard-score-num">94%</div><div class="icard-score-lbl">Impact</div></div><div class="icard-score"><div class="icard-score-num" style="color:var(--g)">8.2%</div><div class="icard-score-lbl">Engagement</div></div></div>
+          <div class="icard-tags"><span class="icard-tag">Biryani</span><span class="icard-tag">Street food</span></div>
+          <button class="connect-btn" onclick="showModal('connect')"><i class="ti ti-handshake" style="font-size:13px"></i> Connect with influencer</button>
+          <div class="connect-price">Connection fee: ₹1,500 · Via FoodCulture</div>
+        </div>
+      </div>
+      <div class="icard">
+        <div class="icard-top" style="background:linear-gradient(135deg,#0a2d10,#1a6030)">🥘<div class="icard-av" style="background:var(--gl);color:var(--g)">SF</div></div>
+        <div class="icard-body">
+          <div class="icard-name">Spice &amp; Fork</div>
+          <div class="icard-handle">@spiceandfork · 210K</div>
+          <div class="icard-score-row"><div class="icard-score"><div class="icard-score-num">87%</div><div class="icard-score-lbl">Impact</div></div><div class="icard-score"><div class="icard-score-num" style="color:var(--g)">6.8%</div><div class="icard-score-lbl">Engagement</div></div></div>
+          <div class="icard-tags"><span class="icard-tag">South Indian</span><span class="icard-tag">Fine dining</span></div>
+          <button class="connect-btn" onclick="showModal('connect')"><i class="ti ti-handshake" style="font-size:13px"></i> Connect with influencer</button>
+          <div class="connect-price">Connection fee: ₹1,200 · Via FoodCulture</div>
+        </div>
+      </div>
+      <div class="icard">
+        <div class="icard-top" style="background:linear-gradient(135deg,#2d1a00,#6b4000)">🧆<div class="icard-av" style="background:var(--gdl);color:var(--gd)">BF</div></div>
+        <div class="icard-body">
+          <div class="icard-name">Bengaluru Foodie</div>
+          <div class="icard-handle">@blrfoodie · 95K</div>
+          <div class="icard-score-row"><div class="icard-score"><div class="icard-score-num">79%</div><div class="icard-score-lbl">Impact</div></div><div class="icard-score"><div class="icard-score-num" style="color:var(--g)">9.1%</div><div class="icard-score-lbl">Engagement</div></div></div>
+          <div class="icard-tags"><span class="icard-tag">Budget eats</span><span class="icard-tag">Street food</span></div>
+          <button class="connect-btn" onclick="showModal('connect')"><i class="ti ti-handshake" style="font-size:13px"></i> Connect with influencer</button>
+          <div class="connect-price">Connection fee: ₹800 · Via FoodCulture</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- LIVE FEED -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title"><i class="ti ti-activity"></i> Live activity feed</span><span style="font-size:11px;color:var(--g);display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;background:var(--g);border-radius:50%;display:inline-block;animation:blink 1.5s infinite"></span>Live now</span></div>
+    <div class="feed-list">
+      <div class="feed-item" onclick="go('restaurant')"><span class="feed-dot" style="background:var(--o)"></span><div class="feed-icon" style="background:#FEF0EA">🍜</div><div class="feed-text"><strong>Dum Biryani House</strong> just went viral — 3 influencer posts drove 340 estimated visits today</div><span class="feed-time">2 min ago</span></div>
+      <div class="feed-item"><span class="feed-dot" style="background:var(--g)"></span><div class="feed-icon" style="background:var(--gl)">🎟️</div><div class="feed-text"><strong>New deal live:</strong> Chettinad Corner offering free dessert for FoodCulture users tonight only</div><span class="feed-time">15 min ago</span></div>
+      <div class="feed-item"><span class="feed-dot" style="background:#F5A623"></span><div class="feed-icon" style="background:var(--gdl)">📸</div><div class="feed-text"><strong>@rahulkitchens</strong> posted about Chettinad Corner — footfall surge expected by 7 PM tonight</div><span class="feed-time">22 min ago</span></div>
+      <div class="feed-item"><span class="feed-dot" style="background:var(--pu)"></span><div class="feed-icon" style="background:var(--pul)">✦</div><div class="feed-text"><strong>Sushi Studio BLR</strong> just opened in MG Road — 24 reviews in first 48 hours, trending fast</div><span class="feed-time">45 min ago</span></div>
+    </div>
+  </div>
+
+  <!-- ZONES -->
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title"><i class="ti ti-map-2"></i> Trending zones · Live</span><a class="sec-more">Open heatmap →</a></div>
+    <div class="zone-grid">
+      <div class="zcard" style="background:#FEF0EA"><div class="zcard-emoji">🔥</div><div class="zcard-name" style="color:var(--o)">Koramangala</div><div class="zcard-score" style="color:var(--o)">98</div><div class="zcard-label" style="color:var(--o)">Trend score</div></div>
+      <div class="zcard" style="background:var(--gdl)"><div class="zcard-emoji">📍</div><div class="zcard-name" style="color:var(--gd)">Indiranagar</div><div class="zcard-score" style="color:var(--gd)">84</div><div class="zcard-label" style="color:var(--gd)">Trend score</div></div>
+      <div class="zcard" style="background:var(--gl)"><div class="zcard-emoji">🌿</div><div class="zcard-name" style="color:var(--g)">HSR Layout</div><div class="zcard-score" style="color:var(--g)">76</div><div class="zcard-label" style="color:var(--g)">Trend score</div></div>
+      <div class="zcard" style="background:var(--pul)"><div class="zcard-emoji">🌙</div><div class="zcard-name" style="color:var(--pu)">JP Nagar</div><div class="zcard-score" style="color:var(--pu)">61</div><div class="zcard-label" style="color:var(--pu)">Trend score</div></div>
+    </div>
+  </div>
+
+  <!-- BRAND INTELLIGENCE BANNER -->
+  <div style="padding:0 36px 32px">
+    <div class="brand-banner" onclick="showModal('brand')">
+      <div class="bb-icon">🏢</div>
+      <div class="bb-info">
+        <div class="bb-title">Are you a food brand or FMCG company?</div>
+        <div class="bb-sub">Get real-time Bengaluru food trend intelligence — which cuisines are growing, which ingredients are viral, which demographics are spending most. Used by leading Indian food brands.</div>
+        <div class="bb-logos"><span class="bb-logo">FMCG</span><span class="bb-logo">QSR Chains</span><span class="bb-logo">Food Startups</span><span class="bb-logo">Consultants</span></div>
+      </div>
+      <div class="bb-cta">
+        <div class="bb-price">₹50K</div>
+        <div class="bb-price-lbl">/ month · Enterprise</div>
+        <button class="bb-btn">Request demo →</button>
+      </div>
+    </div>
+  </div>
+
+    <div class="footer-cta">
+    <div class="fct">Your city's food pulse,<br><span>powered by AI</span></div>
+    <p class="fcs">Join 200+ Bengaluru restaurants already on the waitlist</p>
+    <div class="fbtns">
+      <button class="fbp" onclick="go('dash')">Restaurant dashboard &rarr;</button>
+      <button class="fbs" onclick="srch('Trending restaurants')">Explore trending</button>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <div class="fb-logo"><div class="fb-ball"><i class="ti ti-flame"></i></div><span class="fb-text">Food<span>Culture</span>.ai</span></div>
+    <span class="fb-copy">&copy; 2026 FoodCulture AI &middot; Bengaluru, India</span>
+  </div>
+</div><!-- end page-home -->
+
+<!-- SEARCH PAGE -->
+<div id="page-search" class="page">
+  <div class="sr-wrap">
+    <div class="ai-result-box">
+      <div class="ai-result-label"><i class="ti ti-sparkles"></i> AI-powered result</div>
+      <div class="ai-result-query" id="srq">"Best biryani near Koramangala tonight"</div>
+      <div class="ai-result-text">Based on real-time data and 2,400+ reviews, <strong style="color:#ffb38a">Dum Biryani House</strong> is the standout tonight &mdash; 3 influencer posts, trust score 94, and an exclusive 20% deal active right now. <strong style="color:#ffb38a">Old Town Biryani</strong> is rising fast too. Both open until 11:30 PM.</div>
+    </div>
+    <div class="filter-row">
+      <button class="fb2 on">All results</button>
+      <button class="fb2" onclick="tf2(this)">&#128293; Viral</button>
+      <button class="fb2" onclick="tf2(this)">&#127903;&#65039; Has deals</button>
+      <button class="fb2" onclick="tf2(this)">&#8593; Rising</button>
+      <button class="fb2" onclick="tf2(this)">&#8377; Budget</button>
+      <button class="fb2" onclick="tf2(this)">&#11088; 4.5+</button>
+    </div>
+    <div class="sr-grid">
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#fff5f0,#ffe0d0)"><span style="font-size:40px">&#127836;</span><div class="rcard-badges"><span class="rcard-badge v">&#128293; Viral</span></div></div>
+        <div class="rcard-info">
+          <div class="rcard-name">Dum Biryani House</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> Koramangala &middot; &#8377;&#8377; &middot; 0.4km</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.8</div><div class="rcard-inf" style="color:var(--g)"><i class="ti ti-ticket"></i> Deal active</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:94%;background:var(--o)"></div></div>
+          <div class="rcard-actions">
+            <button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book</button>
+            <button class="notify-btn" onclick="event.stopPropagation();showModal('deal1')">&#127903;&#65039; Deal</button>
+          </div>
+        </div>
+      </div>
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#fffdf0,#fff0c0)"><span style="font-size:40px">&#129373;</span><div class="rcard-badges"><span class="rcard-badge r">&#8593; Rising</span></div></div>
+        <div class="rcard-info">
+          <div class="rcard-name">Old Town Biryani</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> 5th Block &middot; &#8377; &middot; 1.2km</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.6</div><div class="rcard-inf"><i class="ti ti-brand-instagram"></i> 1 post</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:82%;background:var(--g)"></div></div>
+          <div class="rcard-actions">
+            <button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book</button>
+            <button class="notify-btn" onclick="event.stopPropagation();showModal('notify')"><i class="ti ti-bell" style="font-size:11px"></i> Notify</button>
+          </div>
+        </div>
+      </div>
+      <div class="rcard" onclick="go('restaurant')">
+        <div class="rcard-img" style="background:linear-gradient(135deg,#f0fff5,#d0f0e0)"><span style="font-size:40px">&#127834;</span><div class="rcard-badges"><span class="rcard-badge v">&#128293; Viral</span></div></div>
+        <div class="rcard-info">
+          <div class="rcard-name">Royal Hyderabadi</div>
+          <div class="rcard-area"><i class="ti ti-map-pin"></i> Koramangala &middot; &#8377;&#8377;&#8377; &middot; 0.8km</div>
+          <div class="rcard-bottom"><div class="rcard-score"><i class="ti ti-star-filled"></i> 4.7</div><div class="rcard-inf"><i class="ti ti-brand-instagram"></i> 2 posts</div></div>
+          <div class="rcard-bar"><div class="rbfill" style="width:89%;background:var(--o)"></div></div>
+          <div class="rcard-actions">
+            <button class="book-btn" onclick="event.stopPropagation();showModal('book')"><i class="ti ti-calendar" style="font-size:11px"></i> Book</button>
+            <button class="notify-btn" onclick="event.stopPropagation();showModal('notify')"><i class="ti ti-bell" style="font-size:11px"></i> Notify</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESTAURANT DETAIL -->
+<div id="page-restaurant" class="page">
+  <div class="rd-hero">
+    <div class="rd-back" onclick="go('search')"><i class="ti ti-arrow-left"></i> Back to results</div>
+    <div class="rd-header">
+      <div class="rd-emoji-box">&#127836;</div>
+      <div class="rd-meta">
+        <div class="rd-name">Dum Biryani House</div>
+        <div class="rd-sub"><span><i class="ti ti-map-pin"></i> Koramangala 5th Block</span><span><i class="ti ti-clock"></i> Open until 11:30 PM</span><span style="color:#ffb38a">&#8377;&#8377; &middot; &#8377;350 avg</span></div>
+        <div class="rd-tags"><span class="rd-tag">North Indian</span><span class="rd-tag">Biryani</span><span class="rd-tag">Mughlai</span><span class="rd-tag">Dine-in</span></div>
+        <div class="rd-book-row">
+          <button class="rd-book-btn" onclick="showModal('book')"><i class="ti ti-calendar"></i> Book a table</button>
+          <button class="rd-deal-btn" onclick="showModal('deal1')"><i class="ti ti-ticket"></i> Claim 20% deal</button>
+          <button class="rd-notify-btn" onclick="showModal('notify')"><i class="ti ti-bell"></i> Notify me</button>
+        </div>
+      </div>
+      <div class="rd-score-box"><div class="rd-score-num">94</div><div class="rd-score-lbl">Intelligence score</div><div class="rd-score-trend">&#8593; +12 this week</div></div>
+    </div>
+  </div>
+  <div class="rd-body">
+    <div>
+      <div class="rd-section">
+        <div class="rds-title"><i class="ti ti-player-play"></i> Videos people loved</div>
+        <div class="vid-row">
+          <div class="vthumb"><div class="vthumb-bg" style="background:linear-gradient(135deg,#2d0a00,#7b2500)">&#127836;</div><div class="vthumb-overlay"></div><div class="vthumb-play"><i class="ti ti-player-play-filled"></i></div><div class="vthumb-bottom"><div class="vthumb-name">@rahulkitchens</div><div class="vthumb-views">48K views</div></div></div>
+          <div class="vthumb"><div class="vthumb-bg" style="background:linear-gradient(135deg,#0a2d10,#1a6030)">&#127909;</div><div class="vthumb-overlay"></div><div class="vthumb-play"><i class="ti ti-player-play-filled"></i></div><div class="vthumb-bottom"><div class="vthumb-name">@spiceandfork</div><div class="vthumb-views">22K views</div></div></div>
+          <div class="vthumb"><div class="vthumb-bg" style="background:linear-gradient(135deg,#1a0030,#4a0080)">&#128249;</div><div class="vthumb-overlay"></div><div class="vthumb-play"><i class="ti ti-player-play-filled"></i></div><div class="vthumb-bottom"><div class="vthumb-name">@blrfoodie</div><div class="vthumb-views">9K views</div></div></div>
+        </div>
+      </div>
+      <div class="rd-section">
+        <div class="rds-title"><i class="ti ti-sparkles"></i> AI Intelligence Brief</div>
+        <div class="brief-box"><div class="brief-ai"><i class="ti ti-robot"></i> FoodCulture AI &middot; Updated 2 hours ago</div>Dum Biryani House is experiencing a significant viral surge this week, driven by three high-impact influencer posts. Signature slow-cooked dum biryani mentioned in 47 reviews this month &mdash; a 340% increase. Sentiment 94% positive with "perfectly spiced" and "generous portions" most frequent. Trust score exceptionally high. Expect queues on weekends &mdash; arrive before 7:30 PM.</div>
+      </div>
+      <div class="rd-section">
+        <div class="rds-title"><i class="ti ti-message-circle"></i> Recent reviews</div>
+        <div class="review-list">
+          <div class="rev-item"><div class="rev-top"><span class="rev-name">Priya M.</span><div class="rev-stars"><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i></div></div><div class="rev-text">The dum biryani is absolutely incredible. Best biryani in Bengaluru!</div><span class="rev-tag"><i class="ti ti-check"></i> Verified visit</span></div>
+          <div class="rev-item"><div class="rev-top"><span class="rev-name">Arjun K.</span><div class="rev-stars"><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star"></i></div></div><div class="rev-text">Came after @rahulkitchens' video. Long queue but worth every minute!</div><span class="rev-tag"><i class="ti ti-check"></i> Verified visit</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="active-deal-box">
+        <div class="adb-top"><span class="adb-icon">&#127903;&#65039;</span><span class="adb-title">Active deal right now</span><span class="adb-timer">&#9201; 4h 22m left</span></div>
+        <div class="adb-offer">20% off entire table</div>
+        <div class="adb-desc">FoodCulture exclusive. Show this screen at counter. Valid tonight 6&ndash;9 PM only.</div>
+        <button class="adb-claim" onclick="showModal('deal1')">Claim this deal &rarr;</button>
+      </div>
+      <div class="side-card"><div class="sc-title"><i class="ti ti-chart-line"></i> Key metrics</div>
+        <div class="mrow"><span class="ml">Rating</span><span class="mv" style="color:#F5A623">&#9733; 4.8</span></div>
+        <div class="mrow"><span class="ml">Total reviews</span><span class="mv">1,240</span></div>
+        <div class="mrow"><span class="ml">This month</span><span class="mv" style="color:var(--g)">&#8593; 340%</span></div>
+        <div class="mrow"><span class="ml">Price range</span><span class="mv">&#8377;300&ndash;450</span></div>
+        <div class="mrow"><span class="ml">Peak hours</span><span class="mv">7&ndash;10 PM</span></div>
+      </div>
+      <div class="side-card"><div class="sc-title"><i class="ti ti-brand-instagram"></i> Influencer mentions</div>
+        <div class="inf-mention"><div class="im-av" style="background:#FEF0EA;color:var(--o)">RK</div><div><div class="im-name">Rahul Kitchens</div><div class="im-sub">2 days ago &middot; 48K views</div></div><div class="im-score">94%</div></div>
+        <div class="inf-mention"><div class="im-av" style="background:var(--gl);color:var(--g)">SF</div><div><div class="im-name">Spice &amp; Fork</div><div class="im-sub">5 days ago &middot; 22K views</div></div><div class="im-score">87%</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INFLUENCERS -->
+<div id="page-inf" class="page">
+  <div class="sec" style="padding-top:30px">
+    <div class="sec-head"><span class="sec-title"><i class="ti ti-star"></i> Food Influencer Intelligence &middot; Bengaluru</span><span style="font-size:12px;color:var(--mu)">340 tracked</span></div>
+    <div class="filter-row" style="margin-bottom:22px">
+      <button class="fb2 on">All</button>
+      <button class="fb2" onclick="tf2(this)">&#127819; South Indian</button>
+      <button class="fb2" onclick="tf2(this)">&#127829; Multi-cuisine</button>
+      <button class="fb2" onclick="tf2(this)">&#128205; Koramangala</button>
+      <button class="fb2" onclick="tf2(this)">&#128081; 100K+</button>
+    </div>
+    <div class="inf-dir-grid">
+      <div class="idc"><div class="idc-top" style="background:linear-gradient(135deg,#2d0a00,#7b2500)">&#127836;<div class="idc-av" style="background:#FEF0EA;color:var(--o)">RK</div></div><div class="idc-body"><div class="idc-rank"><i class="ti ti-trophy"></i> #1 this week</div><div class="idc-name">Rahul Kitchens</div><div class="idc-handle">@rahulkitchens &middot; 480K</div><div class="idc-tags"><span class="idc-tag">Biryani</span><span class="idc-tag">Street food</span></div><div class="idc-stats"><div class="idc-stat"><div class="ids-val">480K</div><div class="ids-lbl">Followers</div></div><div class="idc-stat"><div class="ids-val" style="color:var(--o)">94%</div><div class="ids-lbl">Impact</div></div><div class="idc-stat"><div class="ids-val">48K</div><div class="ids-lbl">Avg views</div></div></div><button class="idc-connect" onclick="showModal('connect')"><i class="ti ti-handshake"></i> Connect with influencer</button><div class="idc-price">Connection fee: &#8377;1,500 &middot; Via FoodCulture</div></div></div>
+      <div class="idc"><div class="idc-top" style="background:linear-gradient(135deg,#0a2d10,#1a6030)">&#129368;<div class="idc-av" style="background:var(--gl);color:var(--g)">SF</div></div><div class="idc-body"><div class="idc-rank">#2 this week</div><div class="idc-name">Spice &amp; Fork</div><div class="idc-handle">@spiceandfork &middot; 210K</div><div class="idc-tags"><span class="idc-tag">Fine dining</span><span class="idc-tag">South Indian</span></div><div class="idc-stats"><div class="idc-stat"><div class="ids-val">210K</div><div class="ids-lbl">Followers</div></div><div class="idc-stat"><div class="ids-val" style="color:var(--o)">87%</div><div class="ids-lbl">Impact</div></div><div class="idc-stat"><div class="ids-val">18K</div><div class="ids-lbl">Avg views</div></div></div><button class="idc-connect" onclick="showModal('connect')"><i class="ti ti-handshake"></i> Connect with influencer</button><div class="idc-price">Connection fee: &#8377;1,200 &middot; Via FoodCulture</div></div></div>
+      <div class="idc"><div class="idc-top" style="background:linear-gradient(135deg,#2d1a00,#6b4000)">&#129542;<div class="idc-av" style="background:var(--gdl);color:var(--gd)">BF</div></div><div class="idc-body"><div class="idc-rank">#3 this week</div><div class="idc-name">Bengaluru Foodie</div><div class="idc-handle">@blrfoodie &middot; 95K</div><div class="idc-tags"><span class="idc-tag">Street food</span><span class="idc-tag">Budget eats</span></div><div class="idc-stats"><div class="idc-stat"><div class="ids-val">95K</div><div class="ids-lbl">Followers</div></div><div class="idc-stat"><div class="ids-val" style="color:var(--o)">79%</div><div class="ids-lbl">Impact</div></div><div class="idc-stat"><div class="ids-val">9K</div><div class="ids-lbl">Avg views</div></div></div><button class="idc-connect" onclick="showModal('connect')"><i class="ti ti-handshake"></i> Connect with influencer</button><div class="idc-price">Connection fee: &#8377;800 &middot; Via FoodCulture</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dash" class="page">
+  <div class="dash-wrap">
+    <div class="dash-top">
+      <div><div class="dash-title">&#127836; Dum Biryani House &middot; <span>Dashboard</span></div><div class="dash-date">Koramangala &middot; Updated today, 2:30 PM</div></div>
+      <button class="export-btn"><i class="ti ti-download"></i> Export report</button>
+    </div>
+    <div class="dash-kpis">
+      <div class="kpi"><div class="kpi-icon" style="background:#FEF0EA"><i class="ti ti-chart-line" style="color:var(--o)"></i></div><div class="kpi-num" style="color:var(--o)">94</div><div class="kpi-label">Intelligence score</div><div class="kpi-change up">&#8593; +12 this week</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:var(--gl)"><i class="ti ti-users" style="color:var(--g)"></i></div><div class="kpi-num">1,240</div><div class="kpi-label">Total reviews</div><div class="kpi-change up">&#8593; +340% this month</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:#FEF9EA"><i class="ti ti-star-filled" style="color:#F5A623"></i></div><div class="kpi-num">4.8</div><div class="kpi-label">Avg rating</div><div class="kpi-change up">&#8593; +0.2 this month</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:var(--pul)"><i class="ti ti-speakerphone" style="color:var(--pu)"></i></div><div class="kpi-num">3</div><div class="kpi-label">Influencer posts</div><div class="kpi-change up">48K combined views</div></div>
+    </div>
+    <div class="dash-2">
+      <div class="dc"><div class="dc-title"><i class="ti ti-chart-bar"></i> Weekly footfall trend</div><div class="chart-bars"><div class="bc"><div class="bf" style="height:45%"></div><span class="bl">Mon</span></div><div class="bc"><div class="bf" style="height:55%"></div><span class="bl">Tue</span></div><div class="bc"><div class="bf" style="height:50%"></div><span class="bl">Wed</span></div><div class="bc"><div class="bf" style="height:70%"></div><span class="bl">Thu</span></div><div class="bc"><div class="bf" style="height:95%;opacity:1"></div><span class="bl" style="color:var(--o);font-weight:700">Fri</span></div><div class="bc"><div class="bf" style="height:100%;opacity:1"></div><span class="bl" style="color:var(--o);font-weight:700">Sat</span></div><div class="bc"><div class="bf" style="height:80%"></div><span class="bl">Sun</span></div></div></div>
+      <div class="dc"><div class="dc-title"><i class="ti ti-trophy"></i> Neighbourhood ranking</div>
+        <div class="comp-row"><span class="cr-rank">#1</span><span class="cr-name" style="color:var(--o);font-weight:700">Dum Biryani House</span><div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:94%"></div></div><div class="cr-num">94 &middot; You</div></div></div>
+        <div class="comp-row"><span class="cr-rank">#2</span><span class="cr-name">Royal Hyderabadi</span><div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:81%"></div></div><div class="cr-num">81</div></div></div>
+        <div class="comp-row"><span class="cr-rank">#3</span><span class="cr-name">Old Town Biryani</span><div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:73%"></div></div><div class="cr-num">73</div></div></div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(135deg,#f5f0ff,#ede5ff);border:1px solid rgba(127,119,221,.2);border-radius:14px;padding:24px;text-align:center;margin-bottom:18px">
+      <div style="font-size:32px;margin-bottom:10px">&#128274;</div>
+      <div style="font-size:15px;font-weight:700;color:var(--pu);margin-bottom:6px">AI Menu Analyser &mdash; Premium Feature</div>
+      <div style="font-size:12px;color:#666;margin-bottom:16px;line-height:1.55">Upload your menu and AI tells you which dishes to promote this week based on live Bengaluru trend data. Which items to add, remove, or push harder right now.</div>
+      <button style="background:var(--pu);border:none;border-radius:12px;padding:10px 24px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px" onclick="showModal('premium')"><i class="ti ti-sparkles" style="font-size:13px"></i> Unlock for &#8377;3,000/month</button>
+      <div style="font-size:11px;color:#888;margin-top:8px">Includes weekly menu optimisation reports &middot; Cancel anytime</div>
+    </div>
+    <div class="dc"><div class="dc-title"><i class="ti ti-bulb"></i> AI insights this week</div>
+      <div class="insight-list">
+        <div class="ii good"><span class="ii-icon">&#9989;</span>Your trust score is top 5% in Bengaluru. Reviewers mention "authentic" and "generous portions" &mdash; use these as marketing hooks.</div>
+        <div class="ii warn"><span class="ii-icon">&#9888;&#65039;</span>3 reviews mention long wait times Friday evenings. A pre-booking option could convert hesitant customers.</div>
+        <div class="ii info"><span class="ii-icon">&#128161;</span>@rahulkitchens' post drove ~340 new visits. A collab on an exclusive dish could sustain this momentum 2&ndash;3 more weeks.</div>
+        <div class="ii good"><span class="ii-icon">&#128200;</span>Shawarma Rolls trending +210% citywide. A biryani-shawarma fusion item this week captures search traffic before competitors.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-content">
+    <button class="modal-close" onclick="hideModal()">&#10005;</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+var modals={
+  book:'<div class="modal-icon">&#128197;</div><div class="modal-title">Book a table</div><div class="modal-sub">Reserve your spot at Dum Biryani House &mdash; Koramangala</div><input class="modal-input" placeholder="Your name"/><input class="modal-input" placeholder="Phone number"/><select class="modal-select"><option>Tonight, 7:00 PM (2 seats)</option><option>Tonight, 7:30 PM (4 seats)</option><option>Tonight, 8:00 PM (2 seats)</option><option>Tomorrow, 7:00 PM (any)</option></select><button class="modal-btn" onclick="hideModal()">Confirm booking &rarr;</button><div class="modal-note">Free cancellation up to 1 hour before &middot; No credit card required</div>',
+  deal1:'<div class="modal-icon">&#127903;&#65039;</div><div class="modal-title">20% off your table tonight</div><div class="modal-sub">FoodCulture exclusive at Dum Biryani House. Show this to your waiter.</div><div style="background:#FEF0EA;border-radius:12px;padding:16px;text-align:center;margin:16px 0"><div style="font-size:28px;font-weight:800;color:#E85D26">FC-DBH-20</div><div style="font-size:11px;color:#888;margin-top:4px">Valid tonight 6&ndash;9 PM only &middot; Dine-in only</div></div><input class="modal-input" placeholder="Your phone (to save deal)"/><button class="modal-btn" onclick="hideModal()">Save deal to phone &rarr;</button><div class="modal-note">Saving adds you to FoodCulture &mdash; free forever</div>',
+  deal2:'<div class="modal-icon">&#127903;&#65039;</div><div class="modal-title">Free dessert at Chettinad Corner</div><div class="modal-sub">Show this screen to claim your complimentary Payasam or Ice Halwa.</div><div style="background:#EAF8EE;border-radius:12px;padding:16px;text-align:center;margin:16px 0"><div style="font-size:28px;font-weight:800;color:#2E9E55">FC-CC-DSRT</div><div style="font-size:11px;color:#888;margin-top:4px">Valid tonight with any main &middot; Dine-in only</div></div><input class="modal-input" placeholder="Your phone"/><button class="modal-btn" style="background:#2E9E55" onclick="hideModal()">Save deal &rarr;</button>',
+  deal3:'<div class="modal-icon">&#127903;&#65039;</div><div class="modal-title">Buy 1 Get 1 Pizza</div><div class="modal-sub">FoodCulture exclusive at Pizza Collective, Whitefield.</div><div style="background:#F3EFFE;border-radius:12px;padding:16px;text-align:center;margin:16px 0"><div style="font-size:28px;font-weight:800;color:#7F77DD">FC-PC-BOGO</div><div style="font-size:11px;color:#888;margin-top:4px">Valid today only &middot; Dine-in and takeaway</div></div><input class="modal-input" placeholder="Your phone"/><button class="modal-btn" style="background:#7F77DD" onclick="hideModal()">Save deal &rarr;</button>',
+  notify:'<div class="modal-icon">&#128276;</div><div class="modal-title">Get notified</div><div class="modal-sub">We'll alert you when Dum Biryani House has a new deal, goes viral, or has tables available.</div><input class="modal-input" placeholder="Your phone number"/><select class="modal-select"><option>Notify me about deals</option><option>Notify me when viral</option><option>All of the above</option></select><button class="modal-btn" onclick="hideModal()">Set notification &rarr;</button><div class="modal-note">No spam &middot; One tap to unsubscribe</div>',
+  connect:'<div class="modal-icon">&#129309;</div><div class="modal-title">Connect with Rahul Kitchens</div><div class="modal-sub">FoodCulture handles the introduction. Pay only when you proceed.</div><div style="background:#FEF0EA;border-radius:12px;padding:14px;margin:14px 0;font-size:13px;color:#444;line-height:1.6"><strong>What happens next:</strong><br>1. We share your brief with @rahulkitchens<br>2. He reviews within 48h<br>3. If accepted, direct intro to discuss collab<br>4. &#8377;1,500 fee charged only on acceptance</div><input class="modal-input" placeholder="Your name"/><input class="modal-input" placeholder="Restaurant name"/><input class="modal-input" placeholder="What collab are you interested in?"/><button class="modal-btn" onclick="hideModal()">Send connection request &rarr;</button><div class="modal-note">&#8377;1,500 &middot; Only charged on acceptance</div>',
+  report:'<div class="modal-icon">&#128202;</div><div class="modal-title">This Week's Trend Report</div><div class="modal-sub">Bengaluru Food Intelligence &mdash; Week of May 26, 2026</div><div style="background:#f8f5f0;border-radius:12px;padding:14px;margin:14px 0;font-size:12px;color:#555;line-height:1.7"><strong>Inside:</strong><br>&#9989; Top 10 trending restaurants<br>&#9989; Viral dishes &amp; search spikes<br>&#9989; Influencer impact rankings<br>&#9989; Neighbourhood heat index<br>&#9989; Emerging trends to watch</div><input class="modal-input" placeholder="Your email address"/><button class="modal-btn" onclick="hideModal()">Download for &#8377;199 &rarr;</button><div class="modal-note">Instant PDF &middot; Also &#8377;499/month subscription</div>',
+  brand:'<div class="modal-icon">&#127970;</div><div class="modal-title">Brand Intelligence Access</div><div class="modal-sub">Real-time Bengaluru food trend data for FMCG brands and food consultants.</div><div style="background:#f0f0ff;border-radius:12px;padding:14px;margin:14px 0;font-size:12px;color:#444;line-height:1.7"><strong>Enterprise includes:</strong><br>&#9989; Full API access<br>&#9989; Weekly intelligence briefings<br>&#9989; Custom city &amp; demographic filters<br>&#9989; White-label reporting<br>&#9989; Competitor benchmarking</div><input class="modal-input" placeholder="Name and company"/><input class="modal-input" placeholder="Email address"/><button class="modal-btn" style="background:#7F77DD" onclick="hideModal()">Request a demo &rarr;</button><div class="modal-note">From &#8377;50,000/month &middot; Custom pricing available</div>',
+  premium:'<div class="modal-icon">&#128275;</div><div class="modal-title">AI Menu Analyser</div><div class="modal-sub">Upload your menu &mdash; AI tells you what to promote based on live trend data.</div><div style="background:#F3EFFE;border-radius:12px;padding:14px;margin:14px 0;font-size:12px;color:#444;line-height:1.7"><strong>Premium includes:</strong><br>&#9989; Weekly menu optimisation<br>&#9989; Dish-level trend scoring<br>&#9989; "Add this item now" tips<br>&#9989; Competitor menu comparison<br>&#9989; Seasonal trend forecasting</div><input class="modal-input" placeholder="Restaurant email"/><button class="modal-btn" style="background:#7F77DD" onclick="hideModal()">Start 7-day free trial &rarr;</button><div class="modal-note">&#8377;3,000/month after trial &middot; Cancel anytime</div>'
+};
+function showModal(t){document.getElementById("modal-body").innerHTML=modals[t]||"";document.getElementById("modal").classList.add("show")}
+function hideModal(){document.getElementById("modal").classList.remove("show")}
+function closeModal(e){if(e.target.id==="modal")hideModal()}
+function go(p){document.querySelectorAll(".page").forEach(function(x){x.classList.remove("on")});document.querySelectorAll(".ntab").forEach(function(x){x.classList.remove("act")});document.getElementById("page-"+p).classList.add("on");var m={home:"nl-home",search:"nl-search",inf:"nl-inf",dash:"nl-dash",restaurant:"nl-search"};if(m[p])document.getElementById(m[p]).classList.add("act");window.scrollTo(0,0)}
+function srch(q){var v=q||document.getElementById("hs").value||"Best biryani near Koramangala tonight";document.getElementById("srq").textContent='"'+v+'"';go("search")}
+function tf2(btn){document.querySelectorAll(".filter-row .fb2").forEach(function(b){b.classList.remove("on")});btn.classList.add("on")}
+</script>
+</body>
+</html>
