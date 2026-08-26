@@ -133,7 +133,7 @@ export default function AccountPage() {
     setRoleFixing(false)
     if (error) {
       setRoleFixError(
-        "Ye role save nahi ho paya. Agar aapne pehle se koi role choose kar rakha hai to page refresh karke dubara try karo — agar phir bhi na ho, to hamare database migration (migration_014) ka apply hona baaki hai."
+        "Couldn't save this — please refresh the page and try again. If it still doesn't work, this account may need a one-time backend update first."
       )
       return
     }
@@ -169,7 +169,7 @@ export default function AccountPage() {
       ])
       if (!profileRes.ok) {
         const j = await profileRes.json().catch(() => ({}))
-        setCreatorError(j.error || 'Creator profile save nahi ho paya. Dubara try karo.')
+        setCreatorError(j.error || 'Could not save your creator profile. Please try again.')
         setCreatorSaving(false)
         return
       }
@@ -311,9 +311,9 @@ export default function AccountPage() {
             themselves without needing us to touch the database by hand. */}
         {!isOwner && !isInfluencer && !isAdmin && (
           <section style={{ background: '#FEF9F6', border: `1px solid #f5d5c0`, borderRadius: 16, padding: 24, marginBottom: 16 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Dashboard nahi dikh raha?</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Not seeing your dashboard?</h2>
             <p style={{ fontSize: 13, color: '#666', marginBottom: 16, lineHeight: 1.6 }}>
-              Batao aap kaun ho, taaki sahi dashboard aur profile fields unlock ho jayein:
+              Tell us which one you are, and we'll unlock the right dashboard and profile fields:
             </p>
             {roleFixError && (
               <div role="alert" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#dc2626', marginBottom: 12 }}>

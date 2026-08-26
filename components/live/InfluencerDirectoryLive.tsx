@@ -32,7 +32,7 @@ export default function InfluencerDirectoryPage() {
     const matchSearch = !search ||
       i.name.toLowerCase().includes(search.toLowerCase()) ||
       i.handle.toLowerCase().includes(search.toLowerCase()) ||
-      i.cuisine_tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
+      (i.cuisine_tags ?? []).some(t => t.toLowerCase().includes(search.toLowerCase()))
     const matchPlatform = platform === 'all' || i.platform === platform
     return matchSearch && matchPlatform
   })

@@ -7,7 +7,15 @@ import type { Restaurant, Influencer, Dish, Deal, Review, ActivityFeedItem, Zone
 
 const RESTAURANT_CARD_COLS = 'id,slug,name,emoji,zone_id,area_label,cuisine_tags,price_tier,avg_spend,rating,total_reviews,intelligence_score,intelligence_score_trend,status,listing_status,open_until,listing_images(url,is_primary)'
 const RESTAURANT_FULL_COLS = 'id,slug,name,emoji,zone_id,location_id,owner_id,area_label,cuisine_tags,price_tier,avg_spend,rating,total_reviews,intelligence_score,intelligence_score_trend,status,listing_status,open_until,peak_hours,ai_brief,listing_images(url,alt_text,is_primary,sort_order)'
-const INFLUENCER_COLS = 'id,slug,name,handle,platform,avatar_initials,bio,followers_count,cuisine_tags,impact_score,trust_score,engagement_rate,visits_driven_weekly,connection_fee,rank_this_week,pricing_tiers:influencer_pricing_tiers(id,tier_name,price,deliverables,estimated_reach,turnaround_days)'
+// NOTE: must include every column InfluencerProfileLive.tsx (and any other
+// consumer) actually renders — active_cities/avg_views/fake_follower_pct/
+// response_time_label were missing here, so influencer.active_cities was
+// `undefined` (not null — simply absent from the selected row) on every
+// single influencer detail page, and `undefined.join(...)` crashed the
+// whole page with a client-side exception. The component also has its own
+// `?? []` / `?? '—'` fallbacks now as a second line of defence, but the
+// query needs to actually fetch the data for those to have anything to show.
+const INFLUENCER_COLS = 'id,slug,name,handle,platform,avatar_initials,bio,followers_count,cuisine_tags,impact_score,trust_score,engagement_rate,fake_follower_pct,visits_driven_weekly,avg_views,response_time_label,active_cities,connection_fee,rank_this_week,pricing_tiers:influencer_pricing_tiers(id,tier_name,price,deliverables,estimated_reach,turnaround_days)'
 
 // ─── RESTAURANTS ────────────────────────────────────────────────────────────
 

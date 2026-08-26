@@ -78,7 +78,7 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
               <div style={{ fontSize: 13, color: '#888', marginBottom: 8 }}>{influencer.handle} · {influencer.platform}</div>
               <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6, margin: '0 0 12px' }}>{influencer.bio}</p>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {influencer.cuisine_tags.map(t => (
+                {(influencer.cuisine_tags ?? []).map(t => (
                   <span key={t} style={{ fontSize: 11, background: '#f5f0eb', color: '#666', padding: '2px 8px', borderRadius: 8 }}>{t}</span>
                 ))}
               </div>
@@ -103,11 +103,11 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
           {/* Key metrics row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 1, background: C.border, borderRadius: 12, overflow: 'hidden', marginBottom: 0 }}>
             {[
-              { val: `${(influencer.followers_count / 1000).toFixed(0)}K`, label: 'Followers' },
-              { val: `${influencer.impact_score}%`, label: 'Impact score' },
-              { val: `${influencer.engagement_rate}%`, label: 'Engagement' },
-              { val: `${influencer.trust_score}%`, label: 'Trust score' },
-              { val: influencer.visits_driven_weekly, label: 'Visits/week' },
+              { val: `${((influencer.followers_count ?? 0) / 1000).toFixed(0)}K`, label: 'Followers' },
+              { val: `${influencer.impact_score ?? 0}%`, label: 'Impact score' },
+              { val: `${influencer.engagement_rate ?? 0}%`, label: 'Engagement' },
+              { val: `${influencer.trust_score ?? 0}%`, label: 'Trust score' },
+              { val: influencer.visits_driven_weekly ?? 0, label: 'Visits/week' },
             ].map(m => (
               <div key={m.label} style={{ background: '#fff', padding: '14px 0', textAlign: 'center' }}>
                 <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a' }}>{m.val}</div>
@@ -137,9 +137,9 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
             <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 20 }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 14 }}>Performance bars</div>
               {[
-                { label: 'Visit conversion', val: influencer.impact_score, color: C.coral },
-                { label: 'Audience trust',   val: influencer.trust_score,  color: C.gold },
-                { label: 'Engagement rate',  val: Math.round(influencer.engagement_rate * 5), color: C.green },
+                { label: 'Visit conversion', val: influencer.impact_score ?? 0, color: C.coral },
+                { label: 'Audience trust',   val: influencer.trust_score ?? 0,  color: C.gold },
+                { label: 'Engagement rate',  val: Math.round((influencer.engagement_rate ?? 0) * 5), color: C.green },
                 { label: 'Content quality',  val: 88, color: '#7F77DD' },
               ].map(b => (
                 <div key={b.label} style={{ marginBottom: 12 }}>
@@ -158,10 +158,10 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
               {[
                 { label: 'Platform',        val: influencer.platform },
                 { label: 'Response time',   val: influencer.response_time_label ?? '—' },
-                { label: 'Fake followers',  val: `${influencer.fake_follower_pct}%` },
-                { label: 'Avg views',       val: `${(influencer.avg_views / 1000).toFixed(0)}K` },
-                { label: 'Active cities',   val: influencer.active_cities.join(', ') },
-                { label: 'Connection fee',  val: `₹${influencer.connection_fee.toLocaleString()}` },
+                { label: 'Fake followers',  val: `${influencer.fake_follower_pct ?? 0}%` },
+                { label: 'Avg views',       val: `${((influencer.avg_views ?? 0) / 1000).toFixed(0)}K` },
+                { label: 'Active cities',   val: (influencer.active_cities ?? []).join(', ') || '—' },
+                { label: 'Connection fee',  val: `₹${(influencer.connection_fee ?? 0).toLocaleString()}` },
               ].map(d => (
                 <div key={d.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid #f5f0eb`, fontSize: 13 }}>
                   <span style={{ color: '#888' }}>{d.label}</span>
@@ -233,7 +233,7 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
           <div style={{ maxWidth: 500, margin: '0 auto', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Connect with {influencer.name}</div>
             <p style={{ fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 1.5 }}>
-              {influencer.response_time_label}. One-time connection fee: <strong style={{ color: C.coral }}>₹{influencer.connection_fee.toLocaleString()}</strong>
+              {influencer.response_time_label ?? 'Usually responds within a few days'}. One-time connection fee: <strong style={{ color: C.coral }}>₹{(influencer.connection_fee ?? 0).toLocaleString()}</strong>
             </p>
             {submitted ? (
               <div style={{ textAlign: 'center', padding: 30 }}>
@@ -263,7 +263,7 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
                   disabled={!form.restaurant_name || !form.requester_name}
                   style={{ background: C.coral, color: '#fff', border: 'none', borderRadius: 24, padding: '12px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: (!form.restaurant_name || !form.requester_name) ? 0.5 : 1 }}
                 >
-                  Send connection request · ₹{influencer.connection_fee.toLocaleString()}
+                  Send connection request · ₹{(influencer.connection_fee ?? 0).toLocaleString()}
                 </button>
               </div>
             )}
@@ -277,7 +277,7 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, padding: 28, width: 380, maxWidth: '90vw' }}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Connect with {influencer.name}</div>
             <p style={{ fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 1.5 }}>
-              Fee of <strong style={{ color: C.coral }}>₹{influencer.connection_fee.toLocaleString()}</strong> only charged on acceptance.
+              Fee of <strong style={{ color: C.coral }}>₹{(influencer.connection_fee ?? 0).toLocaleString()}</strong> only charged on acceptance.
             </p>
             <button onClick={() => { setShowModal(false); setActiveTab('connect') }}
               style={{ width: '100%', background: C.coral, color: '#fff', border: 'none', borderRadius: 24, padding: '12px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
