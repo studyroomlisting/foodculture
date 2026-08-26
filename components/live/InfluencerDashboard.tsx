@@ -12,7 +12,27 @@ export default function InfluencerDashboard() {
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
   const [posts,   setPosts]   = useState<any[]>([])
+  const [listingId, setListingId] = useState<string | null>(null)
+  const [requests, setRequests]   = useState<any[]>([])
+  const [respondingId, setRespondingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+
+  async function loadRequests(infId: string) {
+    const { data } = await (supabase as any)
+      .from('connection_requests')
+      .select('id,restaurant_name,requester_name,collab_interest,status,created_at')
+      .eq('influencer_id', infId)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    setRequests(data ?? [])
+  }
+
+  async function respond(id: string, status: 'accepted' | 'declined') {
+    setRespondingId(id)
+    const { error } = await (supabase as any).from('connection_requests').update({ status }).eq('id', id)
+    setRespondingId(null)
+    if (!error) setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r))
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -20,12 +40,23 @@ export default function InfluencerDashboard() {
       const { data: p } = await (supabase as any).from('profiles').select('id,full_name,role,instagram_handle,avatar_url,content_types,audience_size_range,preferred_cuisines').eq('id', user.id).single()
       if (!p || p.role !== 'influencer') { router.push('/dashboard'); return }
       setProfile(p)
-      // Load their posts if they're in the influencer_restaurant_posts table
-      const { data: inf } = await (supabase as any).from('influencers').select('id,name,followers_count,impact_score,visits_driven_weekly,rank_this_week').ilike('instagram_handle', p.instagram_handle || '__NONE__').single()
+      // NOTE: this used to match on influencers.instagram_handle, a column
+      // that doesn't exist on that table (it's called `handle`) — the query
+      // always errored and silently returned nothing, so posts/requests
+      // never loaded for ANY influencer. profile_id is the real, reliable
+      // link between an account and its public creator listing.
+      const { data: inf } = await (supabase as any)
+        .from('influencers')
+        .select('id,name,followers_count,impact_score,visits_driven_weekly,rank_this_week,listing_status')
+        .eq('profile_id', user.id).maybeSingle()
       if (inf) {
-        const { data: infPosts } = await (supabase as any).from('influencer_restaurant_posts').select('id,views,likes,comments,visits_driven,posted_at,caption,restaurant:restaurants(id,name,emoji)').eq('influencer_id', inf.id).order('posted_at', { ascending: false }).limit(10)
-        setPosts(infPosts ?? [])
+        setListingId(inf.id)
         setProfile((prev: any) => ({ ...prev, ...inf }))
+        const [{ data: infPosts }] = await Promise.all([
+          (supabase as any).from('influencer_restaurant_posts').select('id,views,likes,comments,visits_driven,posted_at,caption,restaurant:restaurants(id,name,emoji)').eq('influencer_id', inf.id).order('posted_at', { ascending: false }).limit(10),
+          loadRequests(inf.id),
+        ])
+        setPosts(infPosts ?? [])
       }
       setLoading(false)
     })
@@ -67,6 +98,23 @@ export default function InfluencerDashboard() {
           </div>
         </div>
 
+        {!listingId && (
+          <div role="alert" style={{ background:'#FEF9F6', border:'1px solid #f5d5c0', borderRadius:14, padding:'14px 18px', marginBottom:20, fontSize:13, color:'#555', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+            <span>You don't have a public creator listing yet — restaurants can't discover you or send collaboration requests until you complete it.</span>
+            <Link href="/account" style={{ background:C.purple, color:'#fff', borderRadius:10, padding:'8px 18px', fontSize:12, textDecoration:'none', fontWeight:600, whiteSpace:'nowrap' }}>Complete creator profile →</Link>
+          </div>
+        )}
+        {listingId && profile.listing_status === 'pending_review' && (
+          <div role="status" style={{ background:'#FEF9EA', border:'1px solid #f5e3a8', borderRadius:14, padding:'12px 18px', marginBottom:20, fontSize:13, color:'#8a6d10' }}>
+            ⏳ Your creator listing is pending admin review — once approved, you'll be visible in the public directory and restaurants can send you requests.
+          </div>
+        )}
+        {listingId && profile.listing_status === 'rejected' && (
+          <div role="alert" style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:14, padding:'12px 18px', marginBottom:20, fontSize:13, color:'#dc2626' }}>
+            Your creator listing was not approved. <Link href="/account" style={{ color:'#dc2626', fontWeight:600 }}>Update your profile</Link> and it will be resubmitted for review.
+          </div>
+        )}
+
         {/* KPIs */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14, marginBottom:20 }}>
           {[
@@ -105,14 +153,40 @@ export default function InfluencerDashboard() {
             ))}
           </div>
 
-          {/* Collaboration invitations placeholder */}
+          {/* Collaboration requests — restaurants that clicked "Connect"
+              on this creator's public profile (migration_015). */}
           <div style={{ background:'#fff', border:`1px solid ${C.border}`, borderRadius:16, padding:20 }}>
             <h3 style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>🤝 Collaboration requests</h3>
-            <div style={{ textAlign:'center', padding:24, color:'#aaa' }}>
-              <div style={{ fontSize:32, marginBottom:8 }}>🤝</div>
-              <p style={{ fontSize:13, marginBottom:12 }}>No collaboration requests yet. Complete your profile to attract restaurant partnerships.</p>
-              <Link href="/account" style={{ background:C.purple, color:'#fff', borderRadius:10, padding:'8px 20px', fontSize:12, textDecoration:'none', fontWeight:600 }}>Complete profile</Link>
-            </div>
+            {requests.length === 0 ? (
+              <div style={{ textAlign:'center', padding:24, color:'#aaa' }}>
+                <div style={{ fontSize:32, marginBottom:8 }}>🤝</div>
+                <p style={{ fontSize:13, marginBottom:12 }}>No collaboration requests yet. Complete your profile to attract restaurant partnerships.</p>
+                <Link href="/account" style={{ background:C.purple, color:'#fff', borderRadius:10, padding:'8px 20px', fontSize:12, textDecoration:'none', fontWeight:600 }}>Complete profile</Link>
+              </div>
+            ) : requests.map(r => (
+              <div key={r.id} style={{ padding:'12px 0', borderBottom:`1px solid ${C.border}` }}>
+                <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8 }}>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:600 }}>{r.restaurant_name}</div>
+                    <div style={{ fontSize:11, color:'#aaa', marginTop:2 }}>from {r.requester_name} · {new Date(r.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' })}</div>
+                    {r.collab_interest && <div style={{ fontSize:12, color:'#666', marginTop:6 }}>{r.collab_interest}</div>}
+                  </div>
+                  <span style={{
+                    fontSize:10, fontWeight:700, padding:'3px 9px', borderRadius:10, flexShrink:0, textTransform:'capitalize',
+                    background: r.status==='accepted' ? '#EAF8EE' : r.status==='declined' ? '#f5f5f5' : '#FEF9EA',
+                    color: r.status==='accepted' ? C.green : r.status==='declined' ? '#888' : '#D4860A',
+                  }}>{r.status}</span>
+                </div>
+                {r.status === 'pending' && (
+                  <div style={{ display:'flex', gap:8, marginTop:10 }}>
+                    <button onClick={() => respond(r.id, 'accepted')} disabled={respondingId===r.id}
+                      style={{ background:'#EAF8EE', color:C.green, border:'none', borderRadius:8, padding:'6px 14px', fontSize:12, fontWeight:600, cursor:'pointer', opacity:respondingId===r.id?0.6:1 }}>Accept</button>
+                    <button onClick={() => respond(r.id, 'declined')} disabled={respondingId===r.id}
+                      style={{ background:'#fef2f2', color:'#dc2626', border:'none', borderRadius:8, padding:'6px 14px', fontSize:12, fontWeight:600, cursor:'pointer', opacity:respondingId===r.id?0.6:1 }}>Decline</button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
