@@ -7,7 +7,7 @@ import Nav from '@/components/Nav'
 
 const C = { coral: '#E85D26', green: '#2E9E55', amber: '#D4860A', red: '#dc2626', border: '#ede8e2' }
 
-type Tab = 'listings' | 'users' | 'influencers' | 'reviews' | 'enquiries' | 'audit' | 'claims'
+type Tab = 'listings' | 'users' | 'influencers' | 'collaborations' | 'reviews' | 'enquiries' | 'audit' | 'claims'
 
 export default function AdminDashboard({ initialTab = 'listings' }: { initialTab?: string }) {
   const [tab, setTab] = useState<Tab>(initialTab as Tab ?? 'listings')
@@ -18,6 +18,19 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
   const [enquiries, setEnquiries] = useState<any[]>([])
   const [auditLogs, setAuditLogs] = useState<any[]>([])
   const [claims, setClaims] = useState<any[]>([])
+  // Collaborations tab — see migration_017. `posts` is what's already been
+  // logged (shows on the restaurant's "Influencer coverage" tab and the
+  // influencer's dashboard); `acceptedRequests` is the reference list of
+  // connection_requests an influencer has said yes to, so the admin knows
+  // what still needs logging; `allInfluencers` is the unfiltered influencer
+  // list (including seed/demo rows) for the "log a post" form's dropdown —
+  // creatorListings only has real, profile-linked signups.
+  const [posts, setPosts] = useState<any[]>([])
+  const [acceptedRequests, setAcceptedRequests] = useState<any[]>([])
+  const [allInfluencers, setAllInfluencers] = useState<any[]>([])
+  const [postForm, setPostForm] = useState({ restaurant_id: '', influencer_id: '', caption: '', views: '', likes: '', comments: '', visits_driven: '' })
+  const [postSaving, setPostSaving] = useState(false)
+  const [postError, setPostError] = useState('')
   const [loading, setLoading]     = useState(true)
   const [confirm, setConfirm]     = useState<{ action: string; id: string; name: string } | null>(null)
 
@@ -25,7 +38,7 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: l }, { data: ci }, { data: u }, { data: r }, { data: e }, { data: a }] = await Promise.all([
+    const [{ data: l }, { data: ci }, { data: u }, { data: r }, { data: e }, { data: al }, { data: cl }, { data: p }, { data: ar }, { data: ai }] = await Promise.all([
       (supabase as any).from('restaurants').select('id,name,area_label,listing_status,rating,created_at,emoji,owner_id').order('created_at', { ascending: false }),
       // Real creator (influencer) signups only — seed/demo rows have no profile_id.
       (supabase as any).from('influencers').select('id,slug,name,handle,avatar_initials,cuisine_tags,listing_status,rejection_reason,created_at,profile_id').not('profile_id', 'is', null).order('created_at', { ascending: false }),
@@ -34,11 +47,43 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
       (supabase as any).from('enquiries').select('*').order('created_at', { ascending: false }),
       (supabase as any).from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50),
       (supabase as any).from('listing_claims').select('*, restaurant:restaurants(name,emoji), claimant:profiles(full_name)').order('created_at', { ascending: false }),
+      (supabase as any).from('influencer_restaurant_posts').select('id,caption,views,likes,comments,visits_driven,posted_at,restaurant:restaurants(id,name,emoji),influencer:influencers(id,name,handle)').order('posted_at', { ascending: false }).limit(50),
+      (supabase as any).from('connection_requests').select('id,restaurant_name,requester_name,collab_interest,created_at,influencer:influencers(id,name,handle)').eq('status', 'accepted').order('created_at', { ascending: false }).limit(30),
+      (supabase as any).from('influencers').select('id,name,handle').order('name'),
     ])
     setListings(l ?? []); setCreatorListings(ci ?? []); setUsers(u ?? []); setReviews(r ?? []); setEnquiries(e ?? [])
-    const [al, cl] = await Promise.all([(supabase as any).from('audit_logs').select('*').order('created_at',{ascending:false}).limit(50), (supabase as any).from('listing_claims').select('*, restaurant:restaurants(name,emoji), claimant:profiles(full_name)').order('created_at',{ascending:false})])
-    setAuditLogs(al.data ?? []); setClaims(cl.data ?? [])
+    setAuditLogs(al ?? []); setClaims(cl ?? [])
+    setPosts(p ?? []); setAcceptedRequests(ar ?? []); setAllInfluencers(ai ?? [])
     setLoading(false)
+  }
+
+  async function logCollaborationPost() {
+    if (!postForm.restaurant_id || !postForm.influencer_id) {
+      setPostError('Pick both a restaurant and an influencer.')
+      return
+    }
+    setPostSaving(true); setPostError('')
+    const { error } = await (supabase as any).from('influencer_restaurant_posts').insert([{
+      restaurant_id: postForm.restaurant_id,
+      influencer_id: postForm.influencer_id,
+      caption: postForm.caption || null,
+      views: parseInt(postForm.views) || 0,
+      likes: parseInt(postForm.likes) || 0,
+      comments: parseInt(postForm.comments) || 0,
+      visits_driven: parseInt(postForm.visits_driven) || 0,
+    }])
+    setPostSaving(false)
+    if (error) { setPostError('Could not log this collaboration. Please try again.'); return }
+    await (supabase as any).from('audit_logs').insert([{ action: 'collaboration.logged', target_table: 'influencer_restaurant_posts', metadata: { restaurant_id: postForm.restaurant_id, influencer_id: postForm.influencer_id } }])
+    setPostForm({ restaurant_id: '', influencer_id: '', caption: '', views: '', likes: '', comments: '', visits_driven: '' })
+    loadAll()
+  }
+
+  async function deleteCollaborationPost(id: string) {
+    await (supabase as any).from('influencer_restaurant_posts').delete().eq('id', id)
+    await (supabase as any).from('audit_logs').insert([{ action: 'collaboration.deleted', target_table: 'influencer_restaurant_posts', target_id: id }])
+    setConfirm(null)
+    loadAll()
   }
 
   async function updateListingStatus(id: string, status: string, name: string) {
@@ -97,6 +142,7 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
     listings:    listings.length,
     users:       users.length,
     influencers: creatorListings.length,
+    collaborations: posts.length,
     reviews:     reviews.length,
     enquiries:enquiries.length,
     audit:    auditLogs.length,
@@ -146,7 +192,7 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 20, background: '#fff', borderRadius: 12, padding: 6, border: `1px solid ${C.border}`, width: 'fit-content' }}>
-          {(['listings','users','influencers','reviews','enquiries','claims','audit'] as Tab[]).map(t => (
+          {(['listings','users','influencers','collaborations','reviews','enquiries','claims','audit'] as Tab[]).map(t => (
             <button key={t} onClick={() => setTab(t)}
               style={{ background: tab === t ? C.coral : 'none', color: tab === t ? '#fff' : '#666', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: tab === t ? 600 : 400, cursor: 'pointer', textTransform: 'capitalize' }}>
               {t} <span style={{ fontSize: 11, opacity: 0.8 }}>({tabCounts[t]})</span>
@@ -270,6 +316,97 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
               </div>
             )}
 
+{/* COLLABORATIONS — see migration_017. A restaurant owner sends a connect
+                request, the influencer accepts (both already worked before this),
+                but nothing showed the real-world collab anywhere on the site
+                because influencer_restaurant_posts had no write policy at all.
+                This tab is where the admin logs that a collab actually happened,
+                which is what makes it appear on the restaurant's "Influencer
+                coverage" tab and the influencer's dashboard "Recent posts". */}
+            {tab === 'collaborations' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 20px' }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Log a collaboration</div>
+                  <p style={{ fontSize: 12, color: '#888', margin: '0 0 14px' }}>
+                    Once a restaurant owner and influencer have actually done a real collab (post/reel/video), log it here.
+                    It'll then show up on the restaurant's "Influencer coverage" tab and the influencer's dashboard.
+                  </p>
+                  {postError && (
+                    <div style={{ background: '#fef2f2', color: C.red, borderRadius: 8, padding: '8px 12px', fontSize: 12, marginBottom: 12 }}>{postError}</div>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                    <select value={postForm.restaurant_id} onChange={e => setPostForm({ ...postForm, restaurant_id: e.target.value })}
+                      style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }}>
+                      <option value="">Select restaurant…</option>
+                      {listings.map(l => <option key={l.id} value={l.id}>{l.emoji} {l.name}</option>)}
+                    </select>
+                    <select value={postForm.influencer_id} onChange={e => setPostForm({ ...postForm, influencer_id: e.target.value })}
+                      style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }}>
+                      <option value="">Select influencer…</option>
+                      {allInfluencers.map((i: any) => <option key={i.id} value={i.id}>{i.name}{i.handle ? ` (@${i.handle})` : ''}</option>)}
+                    </select>
+                  </div>
+                  <input value={postForm.caption} onChange={e => setPostForm({ ...postForm, caption: e.target.value })}
+                    placeholder="Caption / what the post was about (optional)"
+                    style={{ width: '100%', border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box' }} />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 14 }}>
+                    <input value={postForm.views} onChange={e => setPostForm({ ...postForm, views: e.target.value })} placeholder="Views" type="number"
+                      style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                    <input value={postForm.likes} onChange={e => setPostForm({ ...postForm, likes: e.target.value })} placeholder="Likes" type="number"
+                      style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                    <input value={postForm.comments} onChange={e => setPostForm({ ...postForm, comments: e.target.value })} placeholder="Comments" type="number"
+                      style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                    <input value={postForm.visits_driven} onChange={e => setPostForm({ ...postForm, visits_driven: e.target.value })} placeholder="Visits driven" type="number"
+                      style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                  </div>
+                  <button onClick={logCollaborationPost} disabled={postSaving}
+                    style={{ background: C.coral, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: postSaving ? 'default' : 'pointer', opacity: postSaving ? 0.7 : 1 }}>
+                    {postSaving ? 'Logging…' : 'Log collaboration'}
+                  </button>
+                </div>
+
+                <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}`, fontWeight: 600, fontSize: 14 }}>
+                    Accepted requests awaiting a logged post ({acceptedRequests.length})
+                  </div>
+                  {acceptedRequests.length === 0
+                    ? <div style={{ padding: 30, textAlign: 'center', color: '#aaa', fontSize: 13 }}>No accepted collaboration requests yet.</div>
+                    : acceptedRequests.map((ar: any) => (
+                      <div key={ar.id} style={{ padding: '12px 20px', borderBottom: `1px solid #f5f0eb`, fontSize: 13 }}>
+                        <strong>{ar.restaurant_name}</strong> × {ar.influencer?.name ?? ar.requester_name}{ar.influencer?.handle ? ` (@${ar.influencer.handle})` : ''}
+                        {ar.collab_interest && <span style={{ color: '#888' }}> — {ar.collab_interest}</span>}
+                        <span style={{ float: 'right', color: '#aaa', fontSize: 11 }}>{new Date(ar.created_at).toLocaleDateString('en-IN')}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+
+                <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}`, fontWeight: 600, fontSize: 14 }}>
+                    Logged collaborations ({posts.length})
+                  </div>
+                  {posts.length === 0
+                    ? <div style={{ padding: 30, textAlign: 'center', color: '#aaa', fontSize: 13 }}>Nothing logged yet.</div>
+                    : posts.map((p: any) => (
+                      <div key={p.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 20px', borderBottom: `1px solid #f5f0eb` }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>
+                            {p.restaurant?.emoji} {p.restaurant?.name ?? 'Unknown restaurant'} × {p.influencer?.name ?? 'Unknown influencer'}{p.influencer?.handle ? ` (@${p.influencer.handle})` : ''}
+                          </div>
+                          {p.caption && <div style={{ fontSize: 12, color: '#888', margin: '4px 0' }}>{p.caption}</div>}
+                          <div style={{ fontSize: 11, color: '#aaa' }}>
+                            👁 {p.views ?? 0} · ❤️ {p.likes ?? 0} · 💬 {p.comments ?? 0} · 🚶 {p.visits_driven ?? 0} visits · {new Date(p.posted_at).toLocaleDateString('en-IN')}
+                          </div>
+                        </div>
+                        <button onClick={() => setConfirm({ action: 'delete_post', id: p.id, name: `${p.restaurant?.name ?? ''} × ${p.influencer?.name ?? ''}` })}
+                          style={{ background: '#fef2f2', color: C.red, border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>Delete</button>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            )}
+
 {/* REVIEWS */}
             {tab === 'reviews' && (
               <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
@@ -375,18 +512,22 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
         <div onClick={() => setConfirm(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, padding: 28, width: 360, maxWidth: '90vw' }}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
-              {confirm.action === 'delete_review' ? 'Remove review?' : confirm.action.startsWith('inf_') ? `${confirm.action.replace('inf_', '')} creator?` : `${confirm.action.replace('_', ' ')} listing?`}
+              {confirm.action === 'delete_review' ? 'Remove review?' : confirm.action === 'delete_post' ? 'Delete logged collaboration?' : confirm.action.startsWith('inf_') ? `${confirm.action.replace('inf_', '')} creator?` : confirm.action.startsWith('claim_') ? `${confirm.action.replace('claim_', '')} claim?` : `${confirm.action.replace('_', ' ')} listing?`}
             </div>
             <p style={{ fontSize: 14, color: '#888', marginBottom: 20 }}>
               {confirm.action === 'delete_review'
                 ? `Remove review by "${confirm.name}"? This cannot be undone.`
+                : confirm.action === 'delete_post'
+                ? `Remove the logged collaboration "${confirm.name}"? It'll disappear from the restaurant's and influencer's pages. This cannot be undone.`
                 : confirm.action.startsWith('inf_')
                 ? `Are you sure you want to mark "${confirm.name}" as ${confirm.action.replace('inf_', '')}?`
+                : confirm.action.startsWith('claim_')
+                ? `Are you sure you want to ${confirm.action.replace('claim_', '')} the ownership claim for "${confirm.name}"?`
                 : `Are you sure you want to mark "${confirm.name}" as ${confirm.action}?`}
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setConfirm(null)} style={{ flex: 1, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 0', fontSize: 14, cursor: 'pointer' }}>Cancel</button>
-              <button onClick={() => { if (confirm.action === 'delete_review') deleteReview(confirm.id); else if (confirm.action.startsWith('inf_')) updateInfluencerStatus(confirm.id, confirm.action.replace('inf_','')); else if (confirm.action.startsWith('claim_')) updateClaimStatus(confirm.id, confirm.action.replace('claim_','')); else updateListingStatus(confirm.id, confirm.action, confirm.name) }}
+              <button onClick={() => { if (confirm.action === 'delete_review') deleteReview(confirm.id); else if (confirm.action === 'delete_post') deleteCollaborationPost(confirm.id); else if (confirm.action.startsWith('inf_')) updateInfluencerStatus(confirm.id, confirm.action.replace('inf_','')); else if (confirm.action.startsWith('claim_')) updateClaimStatus(confirm.id, confirm.action.replace('claim_','')); else updateListingStatus(confirm.id, confirm.action, confirm.name) }}
                 style={{ flex: 1, background: confirm.action === 'approved' || confirm.action === 'inf_approved' ? C.green : C.red, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
                 Confirm
               </button>
