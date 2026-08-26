@@ -380,7 +380,38 @@ function InfluencerOnboarding({ userId, name: initName }: { userId:string; name:
   }
 
   async function finish() {
-    setSaving(true)
+    setSaving(true); setError('')
+
+    // This is the actual deliverable of "creator signup": a row in the
+    // public `influencers` table (what /influencers, restaurant "Find
+    // influencers", and connection requests all read from) — separate from
+    // `profiles`, and nothing used to create it, so a creator could finish
+    // this whole wizard and never appear anywhere. Do this first, and
+    // surface a real error if it fails rather than silently continuing to
+    // the "you're all set" screen.
+    const baseSlug = fullName.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').slice(0,50) || 'creator'
+    const initials = fullName.trim().split(/\s+/).slice(0,2).map(w => w[0]?.toUpperCase() ?? '').join('') || 'FC'
+    const { error: infErr } = await (supabase as any).from('influencers').upsert([{
+      profile_id: userId,
+      slug: `${baseSlug}-${Date.now().toString(36)}`,
+      name: fullName.trim(),
+      handle: instagram.trim().replace(/^@/,''),
+      avatar_initials: initials,
+      bio: bio || null,
+      platform: youtube.trim() ? 'both' : 'instagram',
+      cuisine_tags: cuisines,
+      // listing_status/approved_at/rejection_reason are locked server-side
+      // to 'pending_review' on insert (see migration_013) no matter what we
+      // send — an admin has to approve before this is publicly visible.
+    }], { onConflict: 'profile_id' })
+
+    if (infErr) {
+      setSaving(false)
+      setError('Could not create your creator listing. Please try again.')
+      return
+    }
+
+    // Best-effort — preferences/profile bookkeeping, not the core deliverable.
     await Promise.all([
       fetch('/api/preferences', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ preferred_cuisines:cuisines, notification_prefs:notifs }) }),
       (supabase as any).from('profiles').update({ onboarding_complete:true, onboarding_role:'influencer', content_types:contentTypes }).eq('id', userId),
@@ -394,7 +425,7 @@ function InfluencerOnboarding({ userId, name: initName }: { userId:string; name:
       <div style={{ textAlign:'center', maxWidth:440 }}>
         <div style={{ fontSize:64, marginBottom:16 }}>✨</div>
         <h1 style={{ fontSize:24, fontWeight:700, marginBottom:8 }}>Welcome to the creator programme!</h1>
-        <p style={{ fontSize:14, color:'#666', lineHeight:1.7, marginBottom:28 }}>Your influencer profile is set up. Restaurants can now find you and send collaboration requests.</p>
+        <p style={{ fontSize:14, color:'#666', lineHeight:1.7, marginBottom:28 }}>Your creator profile has been submitted. Our team reviews new profiles within 24-48 hours -- once approved, restaurants can find you and send collaboration requests.</p>
         <button onClick={() => router.push('/influencers')} style={{ background:C.purple, color:'#fff', border:'none', borderRadius:12, padding:'13px 32px', fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>View influencer directory →</button>
       </div>
     </div>
