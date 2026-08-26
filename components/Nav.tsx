@@ -13,21 +13,41 @@ export default function Nav() {
   const [profile,  setProfile]  = useState<Profile | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [notifCount, setNotifCount] = useState(0)
+  // Fallback signal for when profiles.role hasn't caught up with reality yet
+  // (e.g. a Google-OAuth account that signed up before migration_014 was
+  // applied — see that file — is stuck on 'visitor' in the DB even though
+  // the person is really a restaurant owner or influencer). Only computed
+  // when profile.role doesn't already resolve to something recognized, so
+  // it costs nothing once the role data itself is correct.
+  const [fallbackRole, setFallbackRole] = useState<'owner' | 'influencer' | null>(null)
 
   useEffect(() => {
+    async function loadProfile(userId: string) {
+      const { data } = await (supabase as any).from('profiles').select('*').eq('id', userId).single()
+      setProfile(data)
+      if (data && !['owner', 'influencer', 'admin'].includes(data.role)) {
+        const [{ count: ownedCount }, { data: creatorRow }] = await Promise.all([
+          (supabase as any).from('restaurants').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
+          (supabase as any).from('influencers').select('id').eq('profile_id', userId).maybeSingle(),
+        ])
+        if ((ownedCount ?? 0) > 0) setFallbackRole('owner')
+        else if (creatorRow) setFallbackRole('influencer')
+        else setFallbackRole(null)
+      } else {
+        setFallbackRole(null)
+      }
+    }
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
-      ;(supabase as any).from('profiles').select('*').eq('id', user.id).single()
-        .then(({ data }: any) => setProfile(data))
+      loadProfile(user.id)
       // Unread notifications count
       ;(supabase as any).from('notifications').select('id', { count: 'exact', head: true })
         .eq('user_id', user.id).eq('is_read', false)
         .then(({ count }: any) => setNotifCount(count ?? 0))
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session?.user) { setProfile(null); setNotifCount(0); return }
-      ;(supabase as any).from('profiles').select('*').eq('id', session.user.id).single()
-        .then(({ data }: any) => setProfile(data))
+      if (!session?.user) { setProfile(null); setFallbackRole(null); setNotifCount(0); return }
+      loadProfile(session.user.id)
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -47,13 +67,15 @@ export default function Nav() {
     { href: '/deals',        label: 'Deals'        },
   ]
 
-  // Role-based dashboard link
+  // Role-based dashboard link. Falls back to `fallbackRole` (derived from
+  // actually owning a listing / creator profile) when profiles.role hasn't
+  // been fixed up yet — see the loadProfile() note above.
   const getDashLink = () => {
     if (!profile) return null
     const role = (profile as any).role
     if (role === 'admin') return '/admin'
-    if (role === 'owner') return '/dashboard'
-    if (role === 'influencer') return '/dashboard/influencer'
+    if (role === 'owner' || fallbackRole === 'owner') return '/dashboard'
+    if (role === 'influencer' || fallbackRole === 'influencer') return '/dashboard/influencer'
     return null
   }
   const dashLink = getDashLink()
@@ -67,7 +89,10 @@ export default function Nav() {
       case 'owner':      return 'Restaurant owner'
       case 'influencer': return 'Influencer'
       case 'admin':       return 'Admin'
-      default:            return 'Food explorer'
+      default:
+        if (fallbackRole === 'owner') return 'Restaurant owner'
+        if (fallbackRole === 'influencer') return 'Influencer'
+        return 'Food explorer'
     }
   })()
 

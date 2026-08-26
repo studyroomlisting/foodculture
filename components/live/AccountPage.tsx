@@ -45,6 +45,10 @@ export default function AccountPage() {
   const [loadError, setLoadError] = useState('')
   const [formError, setFormError] = useState('')
   const [notifs, setNotifs]     = useState({ influencer_posts: true, enquiries: true, ai_scores: true, deals_expiry: true, marketing: false })
+  // Same fallback as Nav.tsx: if profiles.role hasn't caught up with reality
+  // yet (a Google-OAuth account stuck on 'visitor' — see migration_014),
+  // fall back to what they actually own instead of mislabeling them.
+  const [fallbackRole, setFallbackRole] = useState<'owner' | 'influencer' | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -54,6 +58,14 @@ export default function AccountPage() {
       if (pErr || !p) { setLoadError('Could not load your profile. Please refresh.'); setLoading(false); return }
       setProfile(p)
       setForm({ full_name: p.full_name ?? '', phone: p.phone ?? '', city: p.city ?? 'Bengaluru' })
+      if (!['owner', 'influencer', 'admin'].includes(p.role)) {
+        const [{ count: ownedCount }, { data: creatorRow }] = await Promise.all([
+          (supabase as any).from('restaurants').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
+          (supabase as any).from('influencers').select('id').eq('profile_id', user.id).maybeSingle(),
+        ])
+        if ((ownedCount ?? 0) > 0) setFallbackRole('owner')
+        else if (creatorRow) setFallbackRole('influencer')
+      }
       setLoading(false)
     })
   }, [router])
@@ -88,8 +100,8 @@ export default function AccountPage() {
   )
 
   const initials = (form.full_name || user?.email || 'U').charAt(0).toUpperCase()
-  const isOwner      = profile?.role === 'owner'
-  const isInfluencer = profile?.role === 'influencer'
+  const isOwner      = profile?.role === 'owner' || fallbackRole === 'owner'
+  const isInfluencer = profile?.role === 'influencer' || fallbackRole === 'influencer'
   const isAdmin       = profile?.role === 'admin'
   const roleBadge = isOwner ? { icon: '🏪', label: 'Restaurant owner', bg: '#FEF0EA', color: C.coral }
     : isInfluencer ? { icon: '✨', label: 'Influencer', bg: '#F3EFFE', color: '#7F77DD' }

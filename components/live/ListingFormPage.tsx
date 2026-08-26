@@ -24,14 +24,31 @@ export default function ListingFormPage({ mode, id }: { mode: 'create' | 'edit';
   // for them — and the underlying INSERT would only fail late, with a raw
   // RLS error. Bounce them to /dashboard, which itself routes each role to
   // where it belongs.
+  //
+  // Same "role OR already-owns-a-listing" fallback as DashboardLive.tsx: a
+  // real owner whose profiles.role is still wrong (e.g. a Google-OAuth
+  // account signed up before migration_014 was applied) must still be able
+  // to edit their own existing listing, or add another one.
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.replace('/auth/signin'); return }
       const { data: profile } = await (supabase as any)
         .from('profiles').select('role').eq('id', user.id).single()
-      if (profile?.role !== 'owner') router.replace('/dashboard')
+      if (profile?.role === 'owner') return
+
+      if (mode === 'edit' && id) {
+        const { data: rest } = await (supabase as any)
+          .from('restaurants').select('owner_id').eq('id', id).single()
+        if (rest?.owner_id === user.id) return
+      } else {
+        const { count } = await (supabase as any)
+          .from('restaurants').select('id', { count: 'exact', head: true }).eq('owner_id', user.id)
+        if ((count ?? 0) > 0) return
+      }
+
+      router.replace('/dashboard')
     })
-  }, [router])
+  }, [router, mode, id])
 
   useEffect(() => {
     if (mode === 'edit' && id) {

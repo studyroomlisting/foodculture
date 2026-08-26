@@ -29,6 +29,17 @@ export default function DashboardLive() {
   // landed here and saw the owner UI (including "+ Add listing") regardless
   // of their actual role. Redirect everyone else to where they actually
   // belong before rendering any owner-only content.
+  //
+  // profiles.role === 'influencer' / 'admin' are treated as confident
+  // signals — those accounts always belong elsewhere. Anything else
+  // (including 'visitor', which is what a Google-OAuth account looks like
+  // until migration_014 has actually been run against the database — see
+  // that file) falls through to a second check: does this person already
+  // own a restaurant listing? If they do, they're an owner regardless of
+  // what profiles.role currently says, and get in — this is what makes a
+  // real owner's dashboard keep working even before/without that migration
+  // being applied. Someone with neither the role nor any listings is a
+  // genuine non-owner and gets sent home.
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
@@ -37,8 +48,6 @@ export default function DashboardLive() {
       const role = profile?.role
       if (role === 'influencer') { router.replace('/dashboard/influencer'); return }
       if (role === 'admin') { router.replace('/admin'); return }
-      if (role !== 'owner') { router.replace('/'); return }
-      setAccess('granted')
 
       const { data: r } = await (supabase as any)
         .from('restaurants')
@@ -46,6 +55,10 @@ export default function DashboardLive() {
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false })
       const owned = r ?? []
+
+      if (role !== 'owner' && owned.length === 0) { router.replace('/'); return }
+      setAccess('granted')
+
       setRestaurants(owned)
       if (owned[0]) selectRestaurant(owned[0])
       else setLoading(false)
