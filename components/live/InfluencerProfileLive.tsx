@@ -18,7 +18,6 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ restaurant_name: '', requester_name: '', collab_interest: '' })
   const [submitted, setSubmitted] = useState(false)
-  const [following, setFollowing] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -85,12 +84,6 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
             </div>
             {/* Stats block */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
-              <button
-                onClick={() => setFollowing(f => !f)}
-                style={{ background: following ? '#f0ebe5' : C.coral, color: following ? '#666' : '#fff', border: `1px solid ${following ? C.border : C.coral}`, borderRadius: 20, padding: '8px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-              >
-                {following ? '✓ Following' : '+ Follow'}
-              </button>
               <button
                 onClick={() => setShowModal(true)}
                 style={{ background: '#fff', color: C.coral, border: `1px solid ${C.coral}`, borderRadius: 20, padding: '8px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
