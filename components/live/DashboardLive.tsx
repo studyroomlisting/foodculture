@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import { PageLoader } from '@/components/Skeleton'
@@ -11,6 +12,7 @@ import type { Restaurant, InfluencerRestaurantPost, Deal } from '@/types/databas
 const C = { coral: '#E85D26', gold: '#F5A623', green: '#2E9E55', border: '#ede8e2' }
 
 export default function DashboardLive() {
+  const router = useRouter()
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [selected, setSelected] = useState<Restaurant | null>(null)
   const [stats, setStats] = useState<any>(null)
@@ -20,10 +22,24 @@ export default function DashboardLive() {
   const [activeTab, setActiveTab] = useState<'overview' | 'influencers' | 'deals'>('overview')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [access, setAccess] = useState<'checking' | 'granted'>('checking')
 
+  // This page is the RESTAURANT OWNER console. It used to have no role check
+  // at all — any signed-in user (an influencer, or even a plain visitor)
+  // landed here and saw the owner UI (including "+ Add listing") regardless
+  // of their actual role. Redirect everyone else to where they actually
+  // belong before rendering any owner-only content.
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
+      const { data: profile } = await (supabase as any)
+        .from('profiles').select('role').eq('id', user.id).single()
+      const role = profile?.role
+      if (role === 'influencer') { router.replace('/dashboard/influencer'); return }
+      if (role === 'admin') { router.replace('/admin'); return }
+      if (role !== 'owner') { router.replace('/'); return }
+      setAccess('granted')
+
       const { data: r } = await (supabase as any)
         .from('restaurants')
         .select('id,slug,name,emoji,area_label,cuisine_tags,price_tier,open_until,peak_hours,listing_status,rejection_reason,intelligence_score,intelligence_score_trend,status,rating,total_reviews,ai_brief,avg_spend')
@@ -32,8 +48,9 @@ export default function DashboardLive() {
       const owned = r ?? []
       setRestaurants(owned)
       if (owned[0]) selectRestaurant(owned[0])
+      else setLoading(false)
     })
-  }, [])
+  }, [router])
 
   async function selectRestaurant(r: Restaurant) {
     setSelected(r)
@@ -93,6 +110,19 @@ export default function DashboardLive() {
       } catch {}
     }
     setSubmitting(false)
+  }
+
+  // Don't paint any owner-only UI (including the "+ Add listing" quick
+  // action) until we've confirmed this user is actually an owner — avoids a
+  // flash of the wrong dashboard for influencers/visitors before the
+  // redirect above kicks in.
+  if (access === 'checking') {
+    return (
+      <div style={{ fontFamily: "-apple-system,sans-serif", minHeight: '100vh', background: '#fafafa' }}>
+        <Nav />
+        <div style={{ textAlign: 'center', padding: 80, color: '#aaa' }}>Loading dashboard…</div>
+      </div>
+    )
   }
 
   return (

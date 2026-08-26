@@ -88,7 +88,16 @@ export default function AccountPage() {
   )
 
   const initials = (form.full_name || user?.email || 'U').charAt(0).toUpperCase()
-  const isOwner  = profile?.role === 'owner'
+  const isOwner      = profile?.role === 'owner'
+  const isInfluencer = profile?.role === 'influencer'
+  const isAdmin       = profile?.role === 'admin'
+  const roleBadge = isOwner ? { icon: '🏪', label: 'Restaurant owner', bg: '#FEF0EA', color: C.coral }
+    : isInfluencer ? { icon: '✨', label: 'Influencer', bg: '#F3EFFE', color: '#7F77DD' }
+    : isAdmin ? { icon: '🛡️', label: 'Admin', bg: '#FEF0EA', color: C.coral }
+    : { icon: '🍽️', label: 'Food explorer', bg: '#f5f5f5', color: '#666' }
+  // Same role -> destination mapping as Nav.tsx's getDashLink() — a plain
+  // visitor has no dashboard of their own, so the link is hidden for them.
+  const dashLink = isOwner ? '/dashboard' : isInfluencer ? '/dashboard/influencer' : isAdmin ? '/admin' : null
 
   return (
     <div style={{ fontFamily: '-apple-system,sans-serif', background: '#fafafa', minHeight: '100vh', color: '#1a1a1a' }}>
@@ -106,8 +115,8 @@ export default function AccountPage() {
           <div style={{ padding: '40px 20px 16px' }}>
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 2 }}>{form.full_name || 'Your name'}</div>
             <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{user?.email}</div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: isOwner ? '#FEF0EA' : '#f5f5f5', color: isOwner ? C.coral : '#666', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>
-              {isOwner ? '🏪 Restaurant owner' : '🍽️ Food explorer'}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: roleBadge.bg, color: roleBadge.color, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>
+              {roleBadge.icon} {roleBadge.label}
             </div>
           </div>
 
@@ -123,9 +132,11 @@ export default function AccountPage() {
               {s.label}
             </Link>
           ))}
-            <Link href="/dashboard" style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 20px', fontSize:13, fontWeight:500, color:'#555', background:'transparent', borderLeft:'2px solid transparent', textDecoration:'none' }}>
-              My dashboard
-            </Link>
+            {dashLink && (
+              <Link href={dashLink} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 20px', fontSize:13, fontWeight:500, color:'#555', background:'transparent', borderLeft:'2px solid transparent', textDecoration:'none' }}>
+                My dashboard
+              </Link>
+            )}
             <button onClick={() => supabase.auth.signOut().then(() => router.push('/'))}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', fontSize: 13, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'inherit', borderLeft: '2px solid transparent' }}>
               <i className="ti ti-logout" style={{ fontSize: 16 }} aria-hidden="true" />

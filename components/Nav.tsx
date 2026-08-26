@@ -58,6 +58,19 @@ export default function Nav() {
   }
   const dashLink = getDashLink()
 
+  // Friendly role label for the profile dropdown — the raw DB value
+  // ('owner'/'influencer'/'visitor'/'admin') read fine capitalized, but
+  // reads better spelled out to match how the site refers to each role
+  // elsewhere (signup role picker, account page badge).
+  const roleLabel = (() => {
+    switch ((profile as any)?.role) {
+      case 'owner':      return 'Restaurant owner'
+      case 'influencer': return 'Influencer'
+      case 'admin':       return 'Admin'
+      default:            return 'Food explorer'
+    }
+  })()
+
   const menuItems = [
     { href: dashLink ?? '',              label: 'Dashboard',       icon: '📊', show: !!dashLink },
     { href: '/account',                  label: 'My profile',      icon: '👤', show: true },
@@ -128,7 +141,7 @@ export default function Nav() {
                   {/* Profile header */}
                   <div style={{ padding:'8px 12px', borderBottom:`1px solid ${C.border}`, marginBottom:4 }}>
                     <div style={{ fontSize:13, fontWeight:600 }}>{profile.full_name}</div>
-                    <div style={{ fontSize:11, color:'#888', textTransform:'capitalize' }}>{profile.role}</div>
+                    <div style={{ fontSize:11, color:'#888' }}>{roleLabel}</div>
                   </div>
                   {/* Menu items */}
                   {menuItems.filter(i => i.show).map(item => (

@@ -70,10 +70,20 @@ export async function GET(request: NextRequest) {
   const createdAt = session.user.created_at ? new Date(session.user.created_at).getTime() : 0
   const isNewUser = (Date.now() - createdAt) < 30_000   // < 30 seconds = brand new
 
-  // ── For Google OAuth new users: apply role from URL param ────────────────
+  // ── Apply the role picked on the signup screen for Google OAuth users ────
+  // NOTE: this used to be gated on `isNewUser` only. That's no longer
+  // necessary (and was actively harmful): migration_014 replaced the old
+  // RLS check that silently rejected this exact UPDATE with a trigger that
+  // only ever allows the one legitimate transition (visitor -> owner /
+  // influencer) and is a no-op for anyone whose role is already set — so
+  // running this on every login is now safe, and it doubles as a self-heal
+  // path for any account that got stuck on 'visitor' before this fix (they
+  // just need to hit "Continue with Google" from the signup screen again
+  // with their role selected). Sign-IN's Google button never sends a `role`
+  // param, so ordinary logins are unaffected either way.
   const urlRole = searchParams.get('role')
   const allowedRoles = ['visitor','owner','influencer']
-  if (isNewUser && urlRole && allowedRoles.includes(urlRole)) {
+  if (urlRole && allowedRoles.includes(urlRole)) {
     try {
       await (supabase as any)
         .from('profiles')

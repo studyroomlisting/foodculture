@@ -18,6 +18,21 @@ export default function ListingFormPage({ mode, id }: { mode: 'create' | 'edit';
     avg_spend: '', open_until: '', peak_hours: '', ai_brief: '', emoji: '🍽️',
   })
 
+  // Restaurant listings are an owner-only concept. Someone who isn't an
+  // owner (e.g. an influencer, or a plain visitor) could previously load
+  // this form directly by URL — even though nothing in the nav linked here
+  // for them — and the underlying INSERT would only fail late, with a raw
+  // RLS error. Bounce them to /dashboard, which itself routes each role to
+  // where it belongs.
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) { router.replace('/auth/signin'); return }
+      const { data: profile } = await (supabase as any)
+        .from('profiles').select('role').eq('id', user.id).single()
+      if (profile?.role !== 'owner') router.replace('/dashboard')
+    })
+  }, [router])
+
   useEffect(() => {
     if (mode === 'edit' && id) {
       (supabase as any).from('restaurants').select('*').eq('id', id).single().then(({ data }) => {
