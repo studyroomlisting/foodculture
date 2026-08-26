@@ -19,20 +19,38 @@ export async function GET(request: NextRequest) {
   if (!profile || profile.role !== 'influencer')
     return NextResponse.json({ error: 'Influencer account required' }, { status: 403 })
 
-  // Find influencer record by instagram handle
+  // NOTE: this used to match via .ilike('handle', profile.instagram_handle) —
+  // influencers.handle is a separately-typed field from the onboarding form,
+  // not guaranteed to match profiles.instagram_handle verbatim (case,
+  // whitespace, or an "@" prefix would all break an exact-ish ilike match).
+  // That silent mismatch was throwing this whole route into the "no listing
+  // yet" fallback below for real influencers who DO have a listing — which
+  // is why the Analytics page showed "undefined" everywhere (that fallback
+  // object is missing several fields the UI reads unconditionally).
+  // profile_id is the same reliable account↔listing link already used by
+  // InfluencerDashboard.tsx and the admin panel.
   const { data: inf } = await (supabase as any)
     .from('influencers')
-    .select('id, name, followers_count, impact_score, engagement_rate, trust_score, visits_driven_weekly, avg_views, rank_this_week, rank_last_week, total_visits_all_time, total_views_all_time')
-    .ilike('handle', profile.instagram_handle || '__NONE__')
-    .single()
+    .select('id, name, handle, platform, slug, followers_count, impact_score, engagement_rate, trust_score, visits_driven_weekly, avg_views, rank_this_week, rank_last_week')
+    .eq('profile_id', user.id)
+    .maybeSingle()
 
   if (!inf) {
-    // Return empty analytics for new influencer not yet in directory
+    // Return empty analytics for new influencer not yet in directory —
+    // shaped identically to the real response below so the UI never has to
+    // guess which fields exist.
     return NextResponse.json({
       influencer: null,
-      kpis: { total_views: 0, total_visits: 0, total_posts: 0, avg_engagement: 0, followers: 0, rank: null },
+      kpis: {
+        total_views: 0, total_visits: 0, total_posts: 0, total_likes: 0, total_comments: 0,
+        avg_engagement: 0, followers: 0, rank: null, rank_last_week: null,
+        impact_score: 0, trust_score: 0,
+      },
       trend: [], posts: [], campaigns: [], top_restaurants: [],
-      period_comparison: { views_change: 0, visits_change: 0, posts_change: 0 },
+      period_comparison: {
+        views_change: 0, visits_change: 0, posts_change: 0,
+        this_week_views: 0, last_week_views: 0, this_week_visits: 0, last_week_visits: 0,
+      },
     })
   }
 

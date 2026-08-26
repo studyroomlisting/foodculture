@@ -127,6 +127,7 @@ export default function RestaurantDetailLive({ slug }: { slug: string }) {
       }
       setReviews(prev => [newReview, ...prev])
       setReviewForm({ rating: 5, body: '' })
+      setReviewSent(true)
     } catch {
       setReviewError('Something went wrong. Please try again.')
     } finally {
@@ -325,6 +326,9 @@ export default function RestaurantDetailLive({ slug }: { slug: string }) {
                 <div style={{ background:'#EAF8EE', border:'1px solid #b8e8c8', borderRadius:10, padding:'12px 16px', fontSize:14, color:C.green }}>✓ Review submitted! Thank you.</div>
               ) : (
                 <form onSubmit={submitReview} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                  {reviewError && (
+                    <div role="alert" style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:10, padding:'10px 14px', fontSize:13, color:'#dc2626' }}>{reviewError}</div>
+                  )}
                   <div>
                     <div style={{ fontSize:12, fontWeight:500, color:'#555', marginBottom:8 }}>Rating</div>
                     <div style={{ display:'flex', gap:6 }}>
@@ -343,9 +347,9 @@ export default function RestaurantDetailLive({ slug }: { slug: string }) {
                       value={reviewForm.body} onChange={e => setReviewForm(p => ({ ...p, body: e.target.value }))}
                       style={{ width:'100%', boxSizing:'border-box', border:`1px solid ${C.border}`, borderRadius:8, padding:'9px 12px', fontSize:13, outline:'none', resize:'vertical' }} />
                   </div>
-                  <button type="submit" disabled={!reviewForm.body}
-                    style={{ background:C.coral, color:'#fff', border:'none', borderRadius:10, padding:'10px 22px', fontSize:13, fontWeight:600, cursor:'pointer', alignSelf:'flex-start', opacity: !reviewForm.body ? 0.5 : 1 }}>
-                    Submit review
+                  <button type="submit" disabled={!reviewForm.body || submittingReview}
+                    style={{ background:C.coral, color:'#fff', border:'none', borderRadius:10, padding:'10px 22px', fontSize:13, fontWeight:600, cursor: submittingReview ? 'default' : 'pointer', alignSelf:'flex-start', opacity: (!reviewForm.body || submittingReview) ? 0.5 : 1 }}>
+                    {submittingReview ? 'Submitting…' : 'Submit review'}
                   </button>
                 </form>
               )}

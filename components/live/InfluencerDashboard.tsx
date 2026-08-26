@@ -47,7 +47,7 @@ export default function InfluencerDashboard() {
       // link between an account and its public creator listing.
       const { data: inf } = await (supabase as any)
         .from('influencers')
-        .select('id,name,followers_count,impact_score,visits_driven_weekly,rank_this_week,listing_status')
+        .select('id,slug,name,followers_count,impact_score,visits_driven_weekly,rank_this_week,listing_status')
         .eq('profile_id', user.id).maybeSingle()
       if (inf) {
         setListingId(inf.id)
@@ -66,8 +66,13 @@ export default function InfluencerDashboard() {
 
   const totalViews    = posts.reduce((s, p) => s + (p.views ?? 0), 0)
   const totalVisits   = posts.reduce((s, p) => s + (p.visits_driven ?? 0), 0)
-  const avgEngagement = posts.length ? ((posts.reduce((s, p) => s + (p.likes ?? 0) + (p.comments ?? 0), 0) / posts.reduce((s, p) => s + (p.views ?? 1), 1)) * 100).toFixed(1) : '—'
+  const totalEngaged  = posts.reduce((s, p) => s + (p.likes ?? 0) + (p.comments ?? 0), 0)
+  const avgEngagement = totalViews > 0 ? ((totalEngaged / totalViews) * 100).toFixed(1) : '0.0'
   const initials      = (profile.full_name || 'I').charAt(0).toUpperCase()
+  // Was `(n/1000).toFixed(0)+'K'` — for any real (non-zero) count under 1000
+  // that rounds to "0K", which reads exactly like zero. Show the raw number
+  // below 1000, same as the Analytics page's own fmt().
+  const fmtCount = (n: number) => n <= 0 ? '—' : n >= 1000000 ? (n / 1000000).toFixed(1) + 'M' : n >= 1000 ? (n / 1000).toFixed(1) + 'K' : String(n)
 
   return (
     <div style={{ fontFamily:'-apple-system,sans-serif', background:'#fafafa', minHeight:'100vh', color:'#1a1a1a' }}>
@@ -82,7 +87,14 @@ export default function InfluencerDashboard() {
           <div style={{ display:'flex', gap:10 }}>
             <Link href="/account" style={{ background:'#fff', border:`1px solid ${C.border}`, borderRadius:10, padding:'8px 16px', fontSize:13, color:'#555', textDecoration:'none' }}>Edit profile</Link>
           <Link href="/dashboard/influencer/analytics" style={{ background:C.purple, border:'none', borderRadius:10, padding:'8px 16px', fontSize:13, color:'#fff', textDecoration:'none', fontWeight:600 }}>📊 Analytics</Link>
-            <Link href={`/u/${profile.username || profile.id}`} style={{ background:C.purple, color:'#fff', borderRadius:10, padding:'8px 16px', fontSize:13, textDecoration:'none', fontWeight:600 }}>View public profile</Link>
+            {/* Used to link to /u/[id] — a route that only exists for a
+                different "generic user profile" concept and doesn't exist
+                for influencers, so this always 404'd. A creator's real
+                public page is /influencers/[slug]; only show the button
+                once that listing (and its slug) actually exists. */}
+            {profile.slug && (
+              <Link href={`/influencers/${profile.slug}`} style={{ background:C.purple, color:'#fff', borderRadius:10, padding:'8px 16px', fontSize:13, textDecoration:'none', fontWeight:600 }}>View public profile</Link>
+            )}
           </div>
         </div>
 
@@ -118,7 +130,7 @@ export default function InfluencerDashboard() {
         {/* KPIs */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14, marginBottom:20 }}>
           {[
-            { icon:'👁️', val: totalViews > 0 ? (totalViews/1000).toFixed(0)+'K' : '—', label:'Total views' },
+            { icon:'👁️', val: fmtCount(totalViews), label:'Total views' },
             { icon:'🚶', val: totalVisits > 0 ? totalVisits.toLocaleString('en-IN') : '—', label:'Visits driven' },
             { icon:'📊', val: avgEngagement+'%', label:'Avg engagement' },
             { icon:'🏆', val: profile.rank_this_week ? `#${profile.rank_this_week}` : '—', label:'Platform rank' },
@@ -146,7 +158,7 @@ export default function InfluencerDashboard() {
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:13, fontWeight:600 }}>{p.restaurant?.name}</div>
                   <div style={{ fontSize:11, color:'#aaa', marginTop:2 }}>
-                    👁️ {(p.views/1000).toFixed(0)}K · 🚶 {p.visits_driven} visits · {new Date(p.posted_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' })}
+                    👁️ {fmtCount(p.views ?? 0)} · 🚶 {p.visits_driven ?? 0} visits · {new Date(p.posted_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' })}
                   </div>
                 </div>
               </div>

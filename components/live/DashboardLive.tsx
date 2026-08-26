@@ -23,6 +23,14 @@ export default function DashboardLive() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [access, setAccess] = useState<'checking' | 'granted'>('checking')
+  // Deals — the `deals` table only ever had a public-read RLS policy and no
+  // create UI anywhere, even though the public /deals page's own copy said
+  // "Restaurant owners can add deals from their dashboard." migration_018
+  // adds the owner-scoped INSERT/UPDATE/DELETE policy this form needs.
+  const [showDealForm, setShowDealForm] = useState(false)
+  const [dealForm, setDealForm] = useState({ title: '', description: '', savings_label: '', code: '', expires_at: '' })
+  const [dealSaving, setDealSaving] = useState(false)
+  const [dealError, setDealError] = useState('')
 
   // This page is the RESTAURANT OWNER console. It used to have no role check
   // at all — any signed-in user (an influencer, or even a plain visitor)
@@ -123,6 +131,47 @@ export default function DashboardLive() {
       } catch {}
     }
     setSubmitting(false)
+  }
+
+  async function createDeal() {
+    if (!selected) return
+    if (!dealForm.title.trim() || !dealForm.code.trim()) {
+      setDealError('Title and a promo code are both required.')
+      return
+    }
+    setDealSaving(true)
+    setDealError('')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setDealSaving(false); return }
+
+    const { data, error } = await (supabase as any)
+      .from('deals')
+      .insert([{
+        restaurant_id: selected.id,
+        code: dealForm.code.trim().toUpperCase(),
+        title: dealForm.title.trim(),
+        description: dealForm.description.trim() || null,
+        savings_label: dealForm.savings_label.trim() || null,
+        expires_at: dealForm.expires_at || null,
+      }])
+      .select('*')
+      .single()
+
+    setDealSaving(false)
+    if (error) {
+      setDealError(error.code === '23505' ? 'That promo code is already in use — try a different one.' : 'Could not create the deal. Please try again.')
+      return
+    }
+    setDeals(prev => [data, ...prev])
+    setDealForm({ title: '', description: '', savings_label: '', code: '', expires_at: '' })
+    setShowDealForm(false)
+  }
+
+  async function deleteDeal(id: string) {
+    const prev = deals
+    setDeals(d => d.filter(x => x.id !== id))
+    const { error } = await (supabase as any).from('deals').delete().eq('id', id)
+    if (error) setDeals(prev) // revert on failure
   }
 
   // Don't paint any owner-only UI (including the "+ Add listing" quick
@@ -321,18 +370,59 @@ export default function DashboardLive() {
 
               {/* DEALS TAB */}
               {activeTab === 'deals' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
-                  {deals.length === 0 ? (
-                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: '#aaa' }}>No active deals. Create one to drive footfall.</div>
-                  ) : deals.map(d => (
-                    <div key={d.id} style={{ background: '#FEF0EA', border: '1px solid #f5d5c0', borderRadius: 14, padding: 18 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{d.title}</div>
-                      <p style={{ fontSize: 13, color: '#555', marginBottom: 10 }}>{d.description}</p>
-                      <div style={{ fontWeight: 700, color: C.coral, fontSize: 13, marginBottom: 6 }}>{d.savings_label}</div>
-                      <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, background: '#fff', borderRadius: 8, padding: '5px 10px', display: 'inline-block', color: C.coral, letterSpacing: 1 }}>{d.code}</div>
-                      {d.expires_at && <div style={{ fontSize: 11, color: '#888', marginTop: 8 }}>Expires: {new Date(d.expires_at).toLocaleDateString('en-IN')}</div>}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
+                    <button onClick={() => setShowDealForm(s => !s)}
+                      style={{ background: showDealForm ? '#f5f0eb' : C.coral, color: showDealForm ? '#666' : '#fff', border: 'none', borderRadius: 20, padding: '8px 18px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                      {showDealForm ? 'Cancel' : '+ Create deal'}
+                    </button>
+                  </div>
+
+                  {showDealForm && (
+                    <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginBottom: 18 }}>
+                      {dealError && (
+                        <div role="alert" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#dc2626', marginBottom: 10 }}>{dealError}</div>
+                      )}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                        <input value={dealForm.title} onChange={e => setDealForm({ ...dealForm, title: e.target.value })}
+                          placeholder="Deal title — e.g. 20% off your table tonight"
+                          style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                        <input value={dealForm.code} onChange={e => setDealForm({ ...dealForm, code: e.target.value })}
+                          placeholder="Promo code — e.g. FC-XYZ-20"
+                          style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                        <input value={dealForm.savings_label} onChange={e => setDealForm({ ...dealForm, savings_label: e.target.value })}
+                          placeholder="Savings label — e.g. Save up to ₹280"
+                          style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                        <input value={dealForm.expires_at} onChange={e => setDealForm({ ...dealForm, expires_at: e.target.value })} type="date"
+                          style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                      </div>
+                      <textarea value={dealForm.description} onChange={e => setDealForm({ ...dealForm, description: e.target.value })} rows={2}
+                        placeholder="Description (optional)"
+                        style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 10px', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', marginBottom: 12 }} />
+                      <button onClick={createDeal} disabled={dealSaving}
+                        style={{ background: C.coral, color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: dealSaving ? 'default' : 'pointer', opacity: dealSaving ? 0.7 : 1 }}>
+                        {dealSaving ? 'Creating…' : 'Create deal'}
+                      </button>
                     </div>
-                  ))}
+                  )}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+                    {deals.length === 0 ? (
+                      <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: '#aaa' }}>No active deals. Create one to drive footfall.</div>
+                    ) : deals.map(d => (
+                      <div key={d.id} style={{ background: '#FEF0EA', border: '1px solid #f5d5c0', borderRadius: 14, padding: 18, position: 'relative' }}>
+                        <button onClick={() => deleteDeal(d.id)} title="Delete deal"
+                          style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', color: '#c88', cursor: 'pointer', fontSize: 13 }}>✕</button>
+                        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6, paddingRight: 16 }}>{d.title}</div>
+                        {d.description && <p style={{ fontSize: 13, color: '#555', marginBottom: 10 }}>{d.description}</p>}
+                        {d.savings_label && <div style={{ fontWeight: 700, color: C.coral, fontSize: 13, marginBottom: 6 }}>{d.savings_label}</div>}
+                        <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, background: '#fff', borderRadius: 8, padding: '5px 10px', display: 'inline-block', color: C.coral, letterSpacing: 1 }}>{d.code}</div>
+                        {d.expires_at && <div style={{ fontSize: 11, color: '#888', marginTop: 8 }}>Expires: {new Date(d.expires_at).toLocaleDateString('en-IN')}</div>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </>
