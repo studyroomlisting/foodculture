@@ -61,11 +61,17 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
     loadAll()
   }
 
-  async function updateClaimStatus(id: string, status: string, restaurantId: string) {
+  async function updateClaimStatus(id: string, status: string) {
+    // BUG FIX: this used to take a separate `restaurantId` param, but the
+    // only caller passed `confirm.id` for it too — the CLAIM's id, not the
+    // claim's restaurant_id. So `.eq('id', restaurantId)` below matched no
+    // restaurant row at all: the claim got marked "approved" but ownership
+    // never actually transferred. The claim itself already carries its own
+    // restaurant_id, so just read it from there — no extra param needed.
+    const claim = claims.find((c:any) => c.id === id)
     await (supabase as any).from('listing_claims').update({ status, reviewed_at: new Date().toISOString() }).eq('id', id)
-    if (status === 'approved') {
-      const claim = claims.find((c:any) => c.id === id)
-      if (claim) await (supabase as any).from('restaurants').update({ owner_id: claim.claimant_id }).eq('id', restaurantId)
+    if (status === 'approved' && claim) {
+      await (supabase as any).from('restaurants').update({ owner_id: claim.claimant_id }).eq('id', claim.restaurant_id)
     }
     await (supabase as any).from('audit_logs').insert([{ action: `claim.${status}`, target_table: 'listing_claims', target_id: id }])
     setClaims(prev => prev.map((c:any) => c.id === id ? { ...c, status } : c))
@@ -380,7 +386,7 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setConfirm(null)} style={{ flex: 1, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 0', fontSize: 14, cursor: 'pointer' }}>Cancel</button>
-              <button onClick={() => { if (confirm.action === 'delete_review') deleteReview(confirm.id); else if (confirm.action.startsWith('inf_')) updateInfluencerStatus(confirm.id, confirm.action.replace('inf_','')); else if (confirm.action.startsWith('claim_')) updateClaimStatus(confirm.id, confirm.action.replace('claim_',''), confirm.id); else updateListingStatus(confirm.id, confirm.action, confirm.name) }}
+              <button onClick={() => { if (confirm.action === 'delete_review') deleteReview(confirm.id); else if (confirm.action.startsWith('inf_')) updateInfluencerStatus(confirm.id, confirm.action.replace('inf_','')); else if (confirm.action.startsWith('claim_')) updateClaimStatus(confirm.id, confirm.action.replace('claim_','')); else updateListingStatus(confirm.id, confirm.action, confirm.name) }}
                 style={{ flex: 1, background: confirm.action === 'approved' || confirm.action === 'inf_approved' ? C.green : C.red, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
                 Confirm
               </button>
