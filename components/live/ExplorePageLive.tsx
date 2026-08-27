@@ -60,6 +60,15 @@ export default function ExplorePageLive() {
     setInfPage(1)
   }, [debouncedSearch])
 
+  // Set by the homepage's "Ask AI" button when it was clicked with nothing
+  // typed AND the visitor's IP-detected city isn't Bengaluru (see
+  // HomePageLive.tsx) — FoodCulture AI has no listings outside Bengaluru,
+  // so there's nothing location-based to show them. The instant they type
+  // an actual search themselves, that always takes priority and this gate
+  // drops away — typed search works from anywhere, regardless of location.
+  const outsideArea = params.get('outside_area') === '1' && !debouncedSearch
+  const visitorCity  = params.get('city') || ''
+
   // Fetch restaurants for the current search term + page directly from the
   // database (via getRestaurants' `search` option, which now runs a real
   // whole-table search — see migration_019 / lib/queries.ts). This is the
@@ -67,6 +76,7 @@ export default function ExplorePageLive() {
   // and filtered only those 12 in the browser, so anything outside that
   // first page could never show up as a match no matter how well it matched.
   useEffect(() => {
+    if (outsideArea) { setRestaurants([]); setRestTotal(0); setRestLoading(false); return }
     let cancelled = false
     setRestLoading(true)
     getRestaurants({ search: debouncedSearch || undefined, limit: restPage * PAGE_SIZE, offset: 0 })
@@ -76,10 +86,11 @@ export default function ExplorePageLive() {
       })
       .catch(() => { if (!cancelled) setRestLoading(false) })
     return () => { cancelled = true }
-  }, [debouncedSearch, restPage])
+  }, [debouncedSearch, restPage, outsideArea])
 
   // Same fix, same reasoning, for influencers.
   useEffect(() => {
+    if (outsideArea) { setInfluencers([]); setInfTotal(0); setInfLoading(false); return }
     let cancelled = false
     setInfLoading(true)
     getInfluencers({ search: debouncedSearch || undefined, limit: infPage * PAGE_SIZE, offset: 0 })
@@ -89,12 +100,16 @@ export default function ExplorePageLive() {
       })
       .catch(() => { if (!cancelled) setInfLoading(false) })
     return () => { cancelled = true }
-  }, [debouncedSearch, infPage])
+  }, [debouncedSearch, infPage, outsideArea])
 
   function updateSearch(val: string) {
     setSearch(val)
     const url = val ? `/explore?q=${encodeURIComponent(val)}` : '/explore'
     router.replace(url, { scroll: false })
+  }
+
+  function browseAnyway() {
+    router.replace('/explore', { scroll: false })
   }
 
   const palette = [{bg:'#FEF0EA',color:'#E85D26'},{bg:'#EAF8EE',color:'#2E9E55'},{bg:'#F3EFFE',color:'#7F77DD'},{bg:'#FEF5EA',color:'#D4860A'},{bg:'#EAF4FE',color:'#2E7BD4'}]
@@ -124,24 +139,39 @@ export default function ExplorePageLive() {
             ))}
           </div>
 
-          {/* Tabs */}
-          <div style={{ display:'flex', gap:0 }} role="tablist">
-            {([
-              ['restaurants',`🍽️ Restaurants (${restTotal})`],
-              ['influencers', `✨ Influencers (${infTotal})`],
-              ['zones',       `📍 Zones (${zones.length})`],
-            ] as [Tab,string][]).map(([key,label]) => (
-              <button key={key} onClick={() => setTab(key)}
-                role="tab" aria-selected={tab===key} aria-controls={`panel-${key}`}
-                style={{ background:'none', border:'none', borderBottom: tab===key ? `2px solid ${C.coral}` : '2px solid transparent', padding:'12px 20px', fontSize:13, fontWeight: tab===key ? 600 : 400, color: tab===key ? C.coral : '#666', cursor:'pointer', marginBottom:-1 }}>
-                {label}
-              </button>
-            ))}
-          </div>
+          {/* Tabs — hidden while the outside-service-area message is showing, since there's nothing to tab through */}
+          {!outsideArea && (
+            <div style={{ display:'flex', gap:0 }} role="tablist">
+              {([
+                ['restaurants',`🍽️ Restaurants (${restTotal})`],
+                ['influencers', `✨ Influencers (${infTotal})`],
+                ['zones',       `📍 Zones (${zones.length})`],
+              ] as [Tab,string][]).map(([key,label]) => (
+                <button key={key} onClick={() => setTab(key)}
+                  role="tab" aria-selected={tab===key} aria-controls={`panel-${key}`}
+                  style={{ background:'none', border:'none', borderBottom: tab===key ? `2px solid ${C.coral}` : '2px solid transparent', padding:'12px 20px', fontSize:13, fontWeight: tab===key ? 600 : 400, color: tab===key ? C.coral : '#666', cursor:'pointer', marginBottom:-1 }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       <div style={{ maxWidth:1100, margin:'0 auto', padding:'24px' }}>
+        {outsideArea ? (
+          <div style={{ textAlign:'center', padding:'60px 24px', maxWidth:460, margin:'0 auto' }}>
+            <div style={{ fontSize:40, marginBottom:16 }} aria-hidden="true">📍</div>
+            <div style={{ fontSize:16, fontWeight:700, marginBottom:8 }}>We&apos;re Bengaluru-only right now</div>
+            <p style={{ fontSize:13, color:'#888', lineHeight:1.6, marginBottom:22 }}>
+              Looks like you&apos;re browsing from {visitorCity || 'outside Bengaluru'} — FoodCulture AI doesn&apos;t have any restaurants or influencers listed there yet.
+            </p>
+            <button onClick={browseAnyway}
+              style={{ background:C.coral, color:'#fff', border:'none', borderRadius:24, padding:'10px 24px', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+              Browse Bengaluru anyway →
+            </button>
+          </div>
+        ) : <>
         {tab === 'restaurants' && (
           <div id="panel-restaurants" role="tabpanel">
             {restLoading && restaurants.length === 0 ? <GridSkeleton count={6} cols={3} /> : restaurants.length === 0
@@ -211,6 +241,7 @@ export default function ExplorePageLive() {
             })}
           </div>
         )}
+        </>}
       </div>
       <Footer />
     </div>

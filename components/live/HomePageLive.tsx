@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getTrendingRestaurants, getTrendingDishes, getInfluencers, getTrendingZones, getActivityFeed, getPlatformStats } from '@/lib/queries'
 import Footer from '@/components/Footer'
 import Nav from '@/components/Nav'
@@ -12,6 +13,15 @@ function fmtStat(n: number): string {
   if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K+'
   return String(n)
 }
+
+// Every restaurant/influencer on FoodCulture AI is Bengaluru-based today —
+// there's no "city" column to filter by, the whole catalog just IS
+// Bengaluru. So "search by my location" for a visitor who typed nothing
+// really means: are they even in Bengaluru? If yes, the existing full
+// /explore listing already *is* their local results. If not, showing them
+// the same Bengaluru listings as if local would be misleading — better to
+// say plainly that we don't cover their city yet.
+const SERVICE_CITY_ALIASES = new Set(['bengaluru', 'bangalore'])
 
 export default async function HomePageLive() {
   const [restaurants, dishes, influencersResult, zones, feed, stats] = await Promise.all([
@@ -50,11 +60,27 @@ export default async function HomePageLive() {
           Real-time AI intelligence on restaurants, viral dishes, and influencer impact across every Bengaluru neighbourhood.
         </p>
 
-        {/* Search — server action redirects to /explore */}
+        {/* Search — server action redirects to /explore.
+            Typed query -> always shows those results (location doesn't
+            matter, this is an explicit search). Empty query ("Ask AI"
+            clicked with nothing typed) -> geo-gate on the visitor's city,
+            read from Vercel's IP-geolocation request header (no browser
+            permission prompt, no navigator.geolocation call — that API is
+            in fact already blocked site-wide by middleware.ts's
+            Permissions-Policy header). If the header is missing (local
+            dev, non-Vercel hosting, or Vercel just doesn't have a geo
+            match for that IP) we fail OPEN and show the normal results,
+            so this can never break the page when geo data isn't available. */}
         <form action={async (fd: FormData) => {
           'use server'
           const q = fd.get('q')?.toString().trim()
-          redirect(q ? `/explore?q=${encodeURIComponent(q)}` : '/explore')
+          if (q) {
+            redirect(`/explore?q=${encodeURIComponent(q)}`)
+          }
+          const cityHeader = headers().get('x-vercel-ip-city')
+          const city = cityHeader ? decodeURIComponent(cityHeader).trim() : ''
+          const inServiceArea = !city || SERVICE_CITY_ALIASES.has(city.toLowerCase())
+          redirect(inServiceArea ? '/explore' : `/explore?outside_area=1&city=${encodeURIComponent(city)}`)
         }} style={{ maxWidth:480, margin:'0 auto 24px', background:'#fff', border:'2px solid #E85D26', borderRadius:40, display:'flex', alignItems:'center', padding:'6px 6px 6px 18px', gap:10 }}>
           <label htmlFor="hero-search" style={{ display:'none' }}>Search restaurants</label>
           <span aria-hidden="true" style={{ color:'#E85D26' }}>🔍</span>
