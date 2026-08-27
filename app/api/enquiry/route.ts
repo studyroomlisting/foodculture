@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { sendNewEnquiryEmail, sendEnquiryConfirmationEmail } from '@/lib/email'
+import { phoneError } from '@/lib/validation'
 
 // Basic email regex (RFC 5322 simplified)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -69,6 +70,16 @@ export async function POST(request: NextRequest) {
     }
     if (message.length < 10) {
       return NextResponse.json({ error: 'Message too short' }, { status: 400 })
+    }
+    // Phone is optional, but if the caller sent one it must be a real
+    // 10-digit Indian mobile number — previously only sanitised/truncated,
+    // never actually format-checked server-side (the UI's own check can be
+    // bypassed by anyone calling this endpoint directly).
+    if (sender_phone) {
+      const phoneErr = phoneError(sender_phone)
+      if (phoneErr) {
+        return NextResponse.json({ error: phoneErr }, { status: 400 })
+      }
     }
 
     // ── Supabase client (anon key — RLS enforced) ───────────────────────────

@@ -7,6 +7,7 @@ import { PageLoader } from '@/components/Skeleton'
 import { Breadcrumbs, localBusinessSchema } from '@/lib/seo'
 import { getRestaurantBySlug, getReviews, getDealsForRestaurant, getPostsForRestaurant } from '@/lib/queries'
 import { supabase } from '@/lib/supabase'
+import { nameError, emailError, phoneError } from '@/lib/validation'
 import type { Restaurant, Review, Deal, InfluencerRestaurantPost } from '@/types/database'
 
 const C = { coral:'#E85D26', gold:'#F5A623', green:'#2E9E55', border:'#ede8e2' }
@@ -82,6 +83,12 @@ export default function RestaurantDetailLive({ slug }: { slug: string }) {
   async function submitEnquiry(e: React.FormEvent) {
     e.preventDefault()
     setEnquiryError('')
+    const nameErr = nameError(enquiry.name, 'Name')
+    if (nameErr) { setEnquiryError(nameErr); return }
+    const emailErr = emailError(enquiry.email)
+    if (emailErr) { setEnquiryError(emailErr); return }
+    const phoneErr = phoneError(enquiry.phone)
+    if (phoneErr) { setEnquiryError(phoneErr); return }
     if (enquiry.message.trim().length < 10) { setEnquiryError('Message must be at least 10 characters.'); return }
     setEnquirySending(true)
     const res = await fetch('/api/enquiry', {

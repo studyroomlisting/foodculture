@@ -1,17 +1,26 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { getTrendingRestaurants, getTrendingDishes, getInfluencers, getTrendingZones, getActivityFeed } from '@/lib/queries'
+import { getTrendingRestaurants, getTrendingDishes, getInfluencers, getTrendingZones, getActivityFeed, getPlatformStats } from '@/lib/queries'
 import Footer from '@/components/Footer'
 import Nav from '@/components/Nav'
 import { localBusinessSchema } from '@/lib/seo'
 
+// Formats a raw count the same way the stats strip used to show hardcoded
+// numbers ("1.2K", "48K") — but now driven by the real count.
+function fmtStat(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M+'
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K+'
+  return String(n)
+}
+
 export default async function HomePageLive() {
-  const [restaurants, dishes, influencersResult, zones, feed] = await Promise.all([
+  const [restaurants, dishes, influencersResult, zones, feed, stats] = await Promise.all([
     getTrendingRestaurants(6).catch(() => []),
     getTrendingDishes(8).catch(() => []),
     getInfluencers({ limit: 4 }).catch(() => ({ data: [], count: 0 })),
     getTrendingZones().catch(() => []),
     getActivityFeed(4).catch(() => []),
+    getPlatformStats().catch(() => ({ restaurants: 0, reviews: 0, influencers: 0 })),
   ]) as any[]
   const influencers = (influencersResult as any)?.data ?? []
 
@@ -68,9 +77,9 @@ export default async function HomePageLive() {
       {/* STATS */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, maxWidth:1000, margin:'0 auto', padding:24 }}>
         {[
-          { num:'1.2K', label:'Restaurants tracked' },
-          { num:'48K',  label:'Reviews analysed' },
-          { num:'544+', label:'Influencers scored' },
+          { num:fmtStat((stats as any).restaurants), label:'Restaurants tracked' },
+          { num:fmtStat((stats as any).reviews),     label:'Reviews analysed' },
+          { num:fmtStat((stats as any).influencers), label:'Influencers scored' },
         ].map(s => (
           <div key={s.label} style={{ background:'#fff9f6', border:'1px solid #f5e0d0', borderRadius:12, padding:18, textAlign:'center' }}>
             <div style={{ fontSize:28, fontWeight:700 }}>{s.num}</div>

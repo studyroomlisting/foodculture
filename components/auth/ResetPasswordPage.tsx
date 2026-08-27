@@ -51,7 +51,11 @@ export default function ResetPasswordPage() {
     // Primary: listen for PASSWORD_RECOVERY event (most reliable for reset links)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
+        // A real PASSWORD_RECOVERY session always wins, even if it fires
+        // after the 800ms fallback below already marked the link expired
+        // (slow connections could hit that race before this event arrived).
         setHasSession(true)
+        setLinkExpired(false)
       } else if (event === 'SIGNED_OUT' && !session) {
         setLinkExpired(true)
       }
@@ -62,10 +66,16 @@ export default function ResetPasswordPage() {
       if (session) {
         setHasSession(true)
       } else {
-        // Give onAuthStateChange a moment to fire before marking expired
+        // Give onAuthStateChange a moment to fire before marking expired —
+        // re-check hasSession too (via functional update) so a
+        // PASSWORD_RECOVERY event that already landed isn't overridden.
         setTimeout(() => {
           supabase.auth.getSession().then(({ data: { session: s } }) => {
-            if (!s) setLinkExpired(true)
+            if (s) { setHasSession(true); return }
+            setHasSession(already => {
+              if (!already) setLinkExpired(true)
+              return already
+            })
           })
         }, 800)
       }
@@ -102,16 +112,23 @@ export default function ResetPasswordPage() {
       return
     }
 
-    // Log the password change in audit logs
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await (supabase as any).from('audit_logs').insert([{
-        actor_id: user.id,
-        action: 'auth.password_reset',
-        target_table: 'auth.users',
-        target_id: user.id,
-      }]).catch(() => {})
-    }
+    // Log the password change in audit logs. Best-effort only — wrapped in
+    // try/catch because the Supabase query builder isn't a real Promise (no
+    // .catch() method); calling .catch() on it throws synchronously and,
+    // unguarded, was skipping setDone(true) below entirely — the password
+    // WAS changed, but the user just saw the form sit there with no success
+    // message and no redirect, looking exactly like the reset had failed.
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await (supabase as any).from('audit_logs').insert([{
+          actor_id: user.id,
+          action: 'auth.password_reset',
+          target_table: 'auth.users',
+          target_id: user.id,
+        }])
+      }
+    } catch {}
 
     setDone(true)
     // Redirect based on user role

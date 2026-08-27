@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { emailError } from '@/lib/validation'
 
 const C = { coral: '#E85D26', border: '#ede8e2', error: '#dc2626', green: '#2E9E55' }
 
@@ -14,8 +15,9 @@ export default function ForgotPasswordPage() {
   async function handleReset(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Please enter a valid email address.')
+    const emailErr = emailError(email)
+    if (emailErr) {
+      setError(emailErr)
       return
     }
     setLoading(true)

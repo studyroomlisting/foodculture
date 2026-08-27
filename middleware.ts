@@ -96,9 +96,15 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Redirect logged-in users away from auth pages
+  // Redirect logged-in users away from auth pages. Used to always send them
+  // to /dashboard regardless of a ?next= param — so a logged-in user who
+  // followed e.g. /auth/signin?next=/account/security (a link from
+  // somewhere that needed them logged in) got bounced to /dashboard instead
+  // of the page they were actually headed to.
   if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    const next = request.nextUrl.searchParams.get('next')
+    const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
+    return NextResponse.redirect(new URL(safeNext, request.url))
   }
 
   // Protect dashboard / onboarding

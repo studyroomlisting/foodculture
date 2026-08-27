@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import { supabase } from '@/lib/supabase'
+import { nameError, phoneError, instagramHandleError } from '@/lib/validation'
 
 const C = { coral: '#E85D26', green: '#2E9E55', border: '#ede8e2', amber: '#D4860A' }
 
@@ -113,9 +114,17 @@ export default function AccountPage() {
   }, [router])
 
   async function handleSave() {
+    setFormError('')
+    const nameErr = nameError(form.full_name, 'Full name')
+    if (nameErr) { setFormError(nameErr); return }
+    const phoneErr = phoneError(form.phone)
+    if (phoneErr) { setFormError(phoneErr); return }
+
     setSaving(true)
-    await (supabase as any).from('profiles').update({ full_name: form.full_name, phone: form.phone || null, city: form.city }).eq('id', user.id)
-    setSaving(false); setSaved(true)
+    const { error } = await (supabase as any).from('profiles').update({ full_name: form.full_name.trim(), phone: form.phone.trim() || null, city: form.city }).eq('id', user.id)
+    setSaving(false)
+    if (error) { setFormError('Could not save your changes. Please try again.'); return }
+    setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
 
@@ -145,8 +154,9 @@ export default function AccountPage() {
   }
 
   async function handleSaveCreatorProfile() {
-    if (!creatorForm.instagram_handle.trim()) {
-      setCreatorError('Instagram handle is required — restaurants find you by this.')
+    const handleErr = instagramHandleError(creatorForm.instagram_handle, { required: true })
+    if (handleErr) {
+      setCreatorError(handleErr)
       return
     }
     setCreatorSaving(true); setCreatorError('')

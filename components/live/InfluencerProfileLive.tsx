@@ -5,6 +5,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import { PageLoader } from '@/components/Skeleton'
 import { getInfluencerBySlug, getInfluencerPosts, submitConnectionRequest, getInfluencers } from '@/lib/queries'
+import { nameError, businessNameError } from '@/lib/validation'
 import type { Influencer, InfluencerRestaurantPost } from '@/types/database'
 
 const C = { coral: '#E85D26', gold: '#F5A623', green: '#2E9E55', border: '#ede8e2' }
@@ -18,6 +19,7 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ restaurant_name: '', requester_name: '', collab_interest: '' })
   const [submitted, setSubmitted] = useState(false)
+  const [connectError, setConnectError] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -36,6 +38,11 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
 
   const handleConnect = async () => {
     if (!influencer) return
+    setConnectError('')
+    const restNameErr = businessNameError(form.restaurant_name, 'Restaurant name')
+    if (restNameErr) { setConnectError(restNameErr); return }
+    const requesterNameErr = nameError(form.requester_name, 'Your name')
+    if (requesterNameErr) { setConnectError(requesterNameErr); return }
     await submitConnectionRequest({
       influencer_id: influencer.id,
       restaurant_name: form.restaurant_name,
@@ -236,6 +243,11 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {connectError && (
+                  <div role="alert" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#dc2626' }}>
+                    {connectError}
+                  </div>
+                )}
                 {[
                   { field: 'restaurant_name', label: 'Your restaurant name', placeholder: 'e.g. Dum Biryani House' },
                   { field: 'requester_name',  label: 'Your name',            placeholder: 'e.g. Priya Sharma' },

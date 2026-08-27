@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { emailError } from '@/lib/validation'
 
 const C = { coral: '#E85D26', border: '#ede8e2', error: '#dc2626', green: '#2E9E55' }
 
@@ -18,23 +19,19 @@ export default function SignInPage() {
   const [magicLoading, setMagicLoading] = useState(false)
   const [error,        setError]        = useState('')
   const [magicSent,    setMagicSent]    = useState(false)
-  const [rememberMe,   setRememberMe]   = useState(false)
   const [isLocked,    setIsLocked]     = useState(false)
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Please enter a valid email address.'); return }
+    const emailErr = emailError(email)
+    if (emailErr) { setError(emailErr); return }
     if (!password) { setError('Please enter your password.'); return }
     setLoading(true)
     const { error: err } = await supabase.auth.signInWithPassword({
       email: email.toLowerCase().trim(),
       password,
     })
-    // Remember Me: set long session (30 days) vs short (1 day) via cookie
-    if (!err && rememberMe) {
-      await supabase.auth.updateUser({})  // touch session to refresh token
-    }
     setLoading(false)
     if (err) {
       // Log failed attempt + check lockout status
@@ -63,10 +60,12 @@ export default function SignInPage() {
 
   async function handleMagicLink() {
     setError('')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Enter your email address to receive a magic link.'); return }
+    if (emailError(email)) { setError('Enter your email address to receive a magic link.'); return }
     setMagicLoading(true)
-    await supabase.auth.signInWithOtp({ email: email.toLowerCase().trim(), options: { emailRedirectTo: `${location.origin}/auth/callback?next=${safeNext}` } })
-    setMagicLoading(false); setMagicSent(true)
+    const { error: otpErr } = await supabase.auth.signInWithOtp({ email: email.toLowerCase().trim(), options: { emailRedirectTo: `${location.origin}/auth/callback?next=${safeNext}` } })
+    setMagicLoading(false)
+    if (otpErr) { setError('Could not send a magic link right now. Please try again.'); return }
+    setMagicSent(true)
   }
 
   async function handleGoogle() {
@@ -118,12 +117,6 @@ export default function SignInPage() {
               </div>
               <input id="signin-password" type="password" required autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" style={{ width:'100%', boxSizing:'border-box', border:`1px solid ${C.border}`, borderRadius:10, padding:'10px 14px', fontSize:14, outline:'none', fontFamily:'inherit' }} />
             </div>
-            {/* Remember Me */}
-            <label style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', fontSize:13, color:'#555' }}>
-              <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
-                style={{ accentColor:'#E85D26', width:15, height:15 }} />
-              Remember me for 30 days
-            </label>
             <button type="submit" disabled={loading} style={{ background:C.coral, color:'#fff', border:'none', borderRadius:10, padding:'12px 0', fontSize:14, fontWeight:600, cursor:'pointer', opacity:loading?0.7:1, fontFamily:'inherit' }}>{loading ? 'Signing in...' : 'Sign in'}</button>
             <button type="button" onClick={handleMagicLink} disabled={magicLoading||magicSent} style={{ background:'#f5f0ea', color:'#555', border:'none', borderRadius:10, padding:'11px 0', fontSize:13, cursor:'pointer', opacity:magicLoading?0.7:1, fontFamily:'inherit' }}>{magicLoading ? 'Sending...' : magicSent ? 'Magic link sent ✓' : 'Send magic link instead'}</button>
           </form>

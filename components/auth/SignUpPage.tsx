@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { nameError, emailError } from '@/lib/validation'
 
 const C = { coral: '#E85D26', border: '#ede8e2', error: '#dc2626', green: '#2E9E55' }
 const COMMON_PASSWORDS = ['password','12345678','password1','qwerty123','letmein1','football1','iloveyou','admin123','welcome1','monkey123']
@@ -52,12 +53,15 @@ export default function SignUpPage() {
   const [done,      setDone]      = useState(false)
   const [resending, setResending] = useState(false)
   const [resent,    setResent]    = useState(false)
+  const [resendError, setResendError] = useState('')
   const [termsAccepted,   setTermsAccepted]   = useState(false)
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
 
   function validate(): string | null {
-    if (!name.trim() || name.trim().length < 2) return 'Please enter your full name (at least 2 characters).'
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Please enter a valid email address.'
+    const nameErr = nameError(name, 'Full name')
+    if (nameErr) return nameErr
+    const emailErr = emailError(email)
+    if (emailErr) return emailErr
     if (password.length < 8) return 'Password must be at least 8 characters.'
     if (COMMON_PASSWORDS.includes(password.toLowerCase())) return 'This password is too common. Please choose a stronger one.'
     if (password !== confirm) return 'Passwords do not match.'
@@ -104,8 +108,11 @@ export default function SignUpPage() {
 
   async function handleResend() {
     setResending(true)
-    await supabase.auth.resend({ type: 'signup', email })
-    setResending(false); setResent(true)
+    setResendError('')
+    const { error: resendErr } = await supabase.auth.resend({ type: 'signup', email })
+    setResending(false)
+    if (resendErr) { setResendError('Could not resend the email right now. Please try again in a moment.'); return }
+    setResent(true)
     setTimeout(() => setResent(false), 5000)
   }
 
@@ -120,6 +127,11 @@ export default function SignUpPage() {
         {resent && (
           <div role="status" style={{ background:'#EAF8EE', border:'1px solid #b6e8c4', borderRadius:10, padding:'10px 16px', fontSize:13, color:C.green, marginBottom:12 }}>
             Verification email resent successfully!
+          </div>
+        )}
+        {resendError && (
+          <div role="alert" style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:10, padding:'10px 16px', fontSize:13, color:C.error, marginBottom:12 }}>
+            {resendError}
           </div>
         )}
         <button onClick={handleResend} disabled={resending}

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Nav from '@/components/Nav'
 import { supabase } from '@/lib/supabase'
 import ImageUploader from '@/components/ImageUploader'
+import { businessNameError } from '@/lib/validation'
 
 const C = { coral: '#E85D26', green: '#2E9E55', border: '#ede8e2' }
 
@@ -75,8 +76,9 @@ export default function ListingFormPage({ mode, id }: { mode: 'create' | 'edit';
     setError('')
 
     // Validation
-    if (!form.name.trim() || form.name.trim().length < 2) {
-      setError('Restaurant name is required (at least 2 characters).')
+    const nameErr = businessNameError(form.name, 'Restaurant name')
+    if (nameErr) {
+      setError(nameErr)
       return
     }
     if (!form.area_label.trim()) {

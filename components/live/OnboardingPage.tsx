@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { nameError, phoneError, instagramHandleError, businessNameError } from '@/lib/validation'
 
 const C = { coral: '#E85D26', green: '#2E9E55', border: '#ede8e2', amber: '#D4860A', purple: '#7F77DD' }
 
@@ -116,7 +117,8 @@ function VisitorOnboarding({ userId, name: initName, email: initEmail }: { userI
   }
 
   async function saveProfile() {
-    if (!fullName.trim() || fullName.trim().length < 2) { setError('Please enter your full name.'); return }
+    const fullNameErr = nameError(fullName, 'Full name')
+    if (fullNameErr) { setError(fullNameErr); return }
     if (username && (username.length < 3 || !/^[a-z0-9_]+$/.test(username))) {
       setError('Username must be 3+ characters and contain only letters, numbers, and underscores.'); return
     }
@@ -367,8 +369,10 @@ function InfluencerOnboarding({ userId, name: initName }: { userId:string; name:
   const btnSecondary = () => ({ flex:1 as const, background:'#fff', border:`1px solid ${C.border}`, borderRadius:10, padding:'11px 0', fontSize:13, color:'#666', cursor:'pointer', fontFamily:'inherit' })
 
   async function saveProfile() {
-    if (!fullName.trim() || fullName.trim().length < 2) { setError('Please enter your full name.'); return }
-    if (!instagram.trim()) { setError('Please enter your Instagram handle.'); return }
+    const fullNameErr = nameError(fullName, 'Full name')
+    if (fullNameErr) { setError(fullNameErr); return }
+    const instaErr = instagramHandleError(instagram, { required: true })
+    if (instaErr) { setError(instaErr); return }
     setSaving(true); setError('')
     const res = await fetch('/api/profile', {
       method:'PUT', headers:{'Content-Type':'application/json'},
@@ -591,7 +595,10 @@ function OwnerOnboarding({ name: initialName, userId }: { name: string; userId: 
   }, [userId])
 
   async function saveProfile() {
-    if (!fullName.trim()||fullName.trim().length<2) { setError('Please enter your full name.'); return }
+    const fullNameErr = nameError(fullName, 'Full name')
+    if (fullNameErr) { setError(fullNameErr); return }
+    const phoneErr = phoneError(phone)
+    if (phoneErr) { setError(phoneErr); return }
     setSaving(true); setError('')
     await fetch('/api/profile', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ full_name:fullName.trim(), phone:phone||undefined, instagram_handle:instagramHandle||undefined }) })
     await (supabase as any).from('onboarding_progress').upsert([{ user_id:userId, flow_type:'owner', step_profile_complete:true, current_step:2 }])
@@ -599,7 +606,8 @@ function OwnerOnboarding({ name: initialName, userId }: { name: string; userId: 
   }
 
   async function saveListing() {
-    if (!restName.trim()||restName.trim().length<2) { setError('Please enter your restaurant name.'); return }
+    const restNameErr = businessNameError(restName, 'Restaurant name')
+    if (restNameErr) { setError(restNameErr); return }
     if (!area.trim()) { setError('Please enter the area.'); return }
     setSaving(true); setError('')
     let baseSlug = restName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').slice(0,50)

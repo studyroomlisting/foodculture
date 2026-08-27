@@ -88,6 +88,19 @@ export async function getInfluencers(opts?: { platform?: string; cuisine?: strin
   return { data: (data ?? []) as unknown as Influencer[], count: count ?? 0 }
 }
 
+// Real platform-wide counts for the homepage stats strip, which used to
+// show hardcoded numbers ("1.2K", "48K", "544+") no matter how many
+// restaurants/reviews/influencers actually existed. `head: true` makes
+// Supabase return only the count, not the rows, so this stays cheap.
+export async function getPlatformStats(): Promise<{ restaurants: number; reviews: number; influencers: number }> {
+  const [{ count: restaurants }, { count: reviews }, { count: influencers }] = await Promise.all([
+    (supabase as any).from('restaurants').select('id', { count: 'exact', head: true }).eq('listing_status', 'approved'),
+    (supabase as any).from('reviews').select('id', { count: 'exact', head: true }),
+    (supabase as any).from('influencers').select('id', { count: 'exact', head: true }),
+  ])
+  return { restaurants: restaurants ?? 0, reviews: reviews ?? 0, influencers: influencers ?? 0 }
+}
+
 export async function getInfluencerBySlug(slug: string): Promise<Influencer | null> {
   const { data, error } = await (supabase as any).from('influencers').select(INFLUENCER_COLS).eq('slug', slug).single()
   if (error) return null
