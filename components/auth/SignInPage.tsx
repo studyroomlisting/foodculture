@@ -16,9 +16,7 @@ export default function SignInPage() {
   const [email,        setEmail]        = useState('')
   const [password,     setPassword]     = useState('')
   const [loading,      setLoading]      = useState(false)
-  const [magicLoading, setMagicLoading] = useState(false)
   const [error,        setError]        = useState('')
-  const [magicSent,    setMagicSent]    = useState(false)
   const [isLocked,    setIsLocked]     = useState(false)
 
   async function handleSignIn(e: React.FormEvent) {
@@ -58,16 +56,6 @@ export default function SignInPage() {
     router.push(safeNext); router.refresh()
   }
 
-  async function handleMagicLink() {
-    setError('')
-    if (emailError(email)) { setError('Enter your email address to receive a magic link.'); return }
-    setMagicLoading(true)
-    const { error: otpErr } = await supabase.auth.signInWithOtp({ email: email.toLowerCase().trim(), options: { emailRedirectTo: `${location.origin}/auth/callback?next=${safeNext}` } })
-    setMagicLoading(false)
-    if (otpErr) { setError('Could not send a magic link right now. Please try again.'); return }
-    setMagicSent(true)
-  }
-
   async function handleGoogle() {
     setError('')
     try {
@@ -105,10 +93,9 @@ export default function SignInPage() {
                 )}
               </div>
             )}
-            {magicSent && <div role="status" style={{ background:'#EAF8EE', border:'1px solid #b6e8c4', borderRadius:8, padding:'10px 14px', fontSize:13, color:C.green }}>Magic link sent to <strong>{email}</strong> — check your inbox.</div>}
             <div>
               <label htmlFor="signin-email" style={{ fontSize:13, fontWeight:500, color:'#555', display:'block', marginBottom:6 }}>Email address</label>
-              <input id="signin-email" type="email" required autoComplete="email" value={email} onChange={e => { setEmail(e.target.value); setMagicSent(false) }} placeholder="you@example.com" style={{ width:'100%', boxSizing:'border-box', border:`1px solid ${C.border}`, borderRadius:10, padding:'10px 14px', fontSize:14, outline:'none', fontFamily:'inherit' }} />
+              <input id="signin-email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" style={{ width:'100%', boxSizing:'border-box', border:`1px solid ${C.border}`, borderRadius:10, padding:'10px 14px', fontSize:14, outline:'none', fontFamily:'inherit' }} />
             </div>
             <div>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
@@ -118,7 +105,6 @@ export default function SignInPage() {
               <input id="signin-password" type="password" required autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" style={{ width:'100%', boxSizing:'border-box', border:`1px solid ${C.border}`, borderRadius:10, padding:'10px 14px', fontSize:14, outline:'none', fontFamily:'inherit' }} />
             </div>
             <button type="submit" disabled={loading} style={{ background:C.coral, color:'#fff', border:'none', borderRadius:10, padding:'12px 0', fontSize:14, fontWeight:600, cursor:'pointer', opacity:loading?0.7:1, fontFamily:'inherit' }}>{loading ? 'Signing in...' : 'Sign in'}</button>
-            <button type="button" onClick={handleMagicLink} disabled={magicLoading||magicSent} style={{ background:'#f5f0ea', color:'#555', border:'none', borderRadius:10, padding:'11px 0', fontSize:13, cursor:'pointer', opacity:magicLoading?0.7:1, fontFamily:'inherit' }}>{magicLoading ? 'Sending...' : magicSent ? 'Magic link sent ✓' : 'Send magic link instead'}</button>
           </form>
         </div>
         <p style={{ textAlign:'center', fontSize:14, color:'#888', marginTop:20 }}>New to FoodCulture AI? <Link href="/auth/signup" style={{ color:C.coral, textDecoration:'none', fontWeight:500 }}>Create account</Link></p>
