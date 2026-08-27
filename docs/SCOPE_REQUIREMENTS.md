@@ -40,7 +40,6 @@ FoodCulture AI is a food intelligence and influencer marketplace platform focuse
 ### 2.2 Auth Features
 - Email + password sign up and sign in
 - Google OAuth sign up and sign in
-- Magic link (passwordless) sign in
 - Forgot password / password reset via email
 - Role selection on signup: Visitor or Restaurant Owner
 - Auto-creation of user profile on signup (DB trigger)
@@ -213,7 +212,7 @@ draft → pending_review → approved → rejected
 | Icons | Tabler Icons (webfont) |
 | Fonts | DM Sans + Playfair Display (next/font) |
 | Backend / DB | Supabase PostgreSQL |
-| Auth | Supabase Auth (email/password, Google OAuth, magic link) |
+| Auth | Supabase Auth (email/password, Google OAuth) |
 | Storage | Supabase Storage |
 | Realtime | Supabase Realtime (activity feed) |
 | Email | Resend |

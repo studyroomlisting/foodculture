@@ -148,8 +148,6 @@ export default function SecurityPage() {
                 action: <button onClick={() => setTwoFA(!twoFA)} style={{ background: twoFA ? '#EAF8EE' : '#FEF0EA', border: 'none', borderRadius: 8, padding: '7px 16px', fontSize: 12, fontWeight: 600, color: twoFA ? C.green : C.coral, cursor: 'pointer' }}>{twoFA ? 'Enabled ✓' : 'Enable 2FA'}</button> },
               { icon: '🔗', label: 'Google account', sub: `${email} is connected`,
                 action: <span style={{ fontSize: 12, fontWeight: 600, color: C.green, background: '#EAF8EE', padding: '5px 12px', borderRadius: 8 }}>Connected ✓</span> },
-              { icon: '✉️', label: 'Magic link login', sub: 'Sign in via secure email link without a password',
-                action: <span style={{ fontSize: 12, fontWeight: 600, color: C.green, background: '#EAF8EE', padding: '5px 12px', borderRadius: 8 }}>Enabled ✓</span> },
               { icon: '💻', label: 'Active sessions', sub: '2 active sessions (this device + 1 other)',
                 action: <button onClick={signOutAll} style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 600, color: '#dc2626', cursor: 'pointer' }}>Sign out all</button> },
             ].map((row, i, arr) => (

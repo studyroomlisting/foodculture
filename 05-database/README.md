@@ -75,7 +75,7 @@ npm run dev
 ## Database technology
 
 - **Database**: Supabase PostgreSQL
-- **Auth**: Supabase Auth (email/password, Google OAuth, magic link)
+- **Auth**: Supabase Auth (email/password, Google OAuth)
 - **Storage**: Supabase Storage (`listing-images` bucket)
 - **ORM**: Supabase JS client (`@supabase/supabase-js`)
 - **RLS**: Row Level Security enabled on all private tables

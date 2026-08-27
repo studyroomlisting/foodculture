@@ -161,7 +161,7 @@ Build DealsPage with:
 **Prompt 13 — Sign in / Sign up**
 ```
 Build auth pages with dark gradient background:
-- Sign in: Google OAuth button, email/password form, magic link option, forgot password link
+- Sign in: Google OAuth button, email/password form, forgot password link
 - Sign up: role picker (Visitor vs Restaurant Owner cards), Google OAuth, email/password form
 - Shared: logo ball with pulse animation, tab switcher between Sign in / Create account
 - Forgot password: email field, send reset link button, back to sign in link
@@ -227,7 +227,7 @@ Build history page with:
 Build security page with:
 - Password change row
 - 2FA setup row
-- Connected accounts (Google - Connected, Magic link - Enabled)
+- Connected accounts (Google - Connected)
 - Active sessions row with "Sign out all devices" button
 - Login history table (device, location, timestamp, block suspicious)
 ```

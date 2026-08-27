@@ -17,7 +17,7 @@ Key decisions made during the build, and the reasoning behind each one.
 
 ### Supabase Auth (not NextAuth / Clerk)
 **Decision**: Supabase Auth for all authentication.
-**Reason**: Natively integrated with Supabase RLS — session user is automatically available inside database policies. Supports email/password, Google OAuth, and magic link out of the box. No additional library needed.
+**Reason**: Natively integrated with Supabase RLS — session user is automatically available inside database policies. Supports email/password and Google OAuth out of the box. No additional library needed.
 
 ---
 

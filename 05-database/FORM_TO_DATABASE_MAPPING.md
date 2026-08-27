@@ -36,7 +36,7 @@ Every form in the project, every field, and exactly where the data goes in the d
 | Password | password | `auth.users` | (hashed) | Verified by Supabase Auth |
 
 **No DB write** — Supabase Auth handles session management
-**Magic link / Google OAuth**: no additional fields — redirect to `/auth/callback`
+**Google OAuth**: no additional fields — redirect to `/auth/callback`
 
 ---
 

@@ -38,7 +38,6 @@ Complete inventory of every feature, its status, and where it lives in the codeb
 | Google OAuth sign up | ✅ Live | `/auth/signup` | `SignUpPage` | — |
 | Email + password sign in | ✅ Live | `/auth/signin` | `SignInPage` | — |
 | Google OAuth sign in | ✅ Live | `/auth/signin` | `SignInPage` | — |
-| Magic link sign in | ✅ Live | `/auth/signin` | `SignInPage` | — |
 | Forgot password / reset | ✅ Live | `/auth/forgot-password` | `ForgotPasswordPage` | Supabase reset email |
 | OAuth callback handler | ✅ Live | `/auth/callback` | `route.ts` | Code exchange |
 | Auto profile creation | ✅ Live | — | DB trigger | `handle_new_user()` |
