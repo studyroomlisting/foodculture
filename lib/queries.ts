@@ -28,11 +28,41 @@ export async function getTrendingRestaurants(limit = 6): Promise<Restaurant[]> {
 export async function getRestaurants(opts?: { zone_id?: string; status?: string; cuisine?: string; search?: string; limit?: number; offset?: number }): Promise<{ data: Restaurant[]; count: number }> {
   const limit  = opts?.limit  ?? 12
   const offset = opts?.offset ?? 0
+
+  // A search term needs to match against the WHOLE restaurants table (name,
+  // area, and cuisine tags — including a partial match inside a tag), not
+  // just whichever page of restaurants happens to already be loaded. Route
+  // search through the search_restaurant_ids() DB function (migration_019)
+  // to get the correct page of matching ids plus a real total count, then
+  // fetch those specific rows with the normal card columns — this keeps the
+  // listing_images join working exactly as it does for the no-search path.
+  if (opts?.search && opts.search.trim()) {
+    const { data: hits, error: rpcErr } = await (supabase as any).rpc('search_restaurant_ids', {
+      p_query: opts.search.trim(), p_limit: limit, p_offset: offset,
+    })
+    if (rpcErr) throw rpcErr
+    const ids = ((hits ?? []) as any[]).map(h => h.id)
+    const total = ((hits ?? [])[0] as any)?.total_count ?? 0
+    if (ids.length === 0) return { data: [], count: Number(total) }
+
+    let q2 = (supabase as any).from('restaurants').select(RESTAURANT_CARD_COLS).in('id', ids)
+    if (opts.zone_id) q2 = q2.eq('zone_id', opts.zone_id)
+    if (opts.status)  q2 = q2.eq('status',  opts.status)
+    if (opts.cuisine) q2 = q2.contains('cuisine_tags', [opts.cuisine])
+    const { data: rows, error: rowsErr } = await q2
+    if (rowsErr) throw rowsErr
+
+    // .in() doesn't preserve row order — re-sort to match the ranked order
+    // the search function already computed (by intelligence_score).
+    const byId = new Map(((rows ?? []) as any[]).map(r => [r.id, r]))
+    const ordered = ids.map(id => byId.get(id)).filter(Boolean)
+    return { data: ordered as unknown as Restaurant[], count: Number(total) }
+  }
+
   let q = (supabase as any).from('restaurants').select(RESTAURANT_CARD_COLS, { count: 'exact' }).eq('listing_status','approved').order('intelligence_score',{ascending:false}).range(offset, offset + limit - 1)
   if (opts?.zone_id) q = q.eq('zone_id', opts.zone_id)
   if (opts?.status)  q = q.eq('status',  opts.status)
   if (opts?.cuisine) q = q.contains('cuisine_tags', [opts.cuisine])
-  if (opts?.search)  q = q.ilike('name', '%' + opts.search + '%')
   const { data, error, count } = await q
   if (error) throw error
   return { data: (data ?? []) as unknown as Restaurant[], count: count ?? 0 }
@@ -79,10 +109,37 @@ export async function getTrendingZones(): Promise<Zone[]> {
 export async function getInfluencers(opts?: { platform?: string; cuisine?: string; search?: string; limit?: number; offset?: number }): Promise<{ data: Influencer[]; count: number }> {
   const limit  = opts?.limit  ?? 12
   const offset = opts?.offset ?? 0
+
+  // Same fix as getRestaurants() above: search the WHOLE influencers table
+  // (name, handle, and cuisine tags) via search_influencer_ids()
+  // (migration_019) instead of only ever searching within whichever page
+  // was already loaded, then fetch those specific rows with the normal
+  // columns so the pricing_tiers join keeps working as before.
+  if (opts?.search && opts.search.trim()) {
+    const { data: hits, error: rpcErr } = await (supabase as any).rpc('search_influencer_ids', {
+      p_query: opts.search.trim(), p_limit: limit, p_offset: offset,
+    })
+    if (rpcErr) throw rpcErr
+    const ids = ((hits ?? []) as any[]).map(h => h.id)
+    const total = ((hits ?? [])[0] as any)?.total_count ?? 0
+    if (ids.length === 0) return { data: [], count: Number(total) }
+
+    let q2 = (supabase as any).from('influencers').select(INFLUENCER_COLS).in('id', ids)
+    if (opts.platform) q2 = q2.eq('platform', opts.platform)
+    if (opts.cuisine)  q2 = q2.contains('cuisine_tags', [opts.cuisine])
+    const { data: rows, error: rowsErr } = await q2
+    if (rowsErr) throw rowsErr
+
+    // .in() doesn't preserve row order — re-sort to match the ranked order
+    // the search function already computed (by rank_this_week).
+    const byId = new Map(((rows ?? []) as any[]).map(r => [r.id, r]))
+    const ordered = ids.map(id => byId.get(id)).filter(Boolean)
+    return { data: ordered as unknown as Influencer[], count: Number(total) }
+  }
+
   let q = (supabase as any).from('influencers').select(INFLUENCER_COLS, { count: 'exact' }).order('rank_this_week',{ascending:true,nullsFirst:false}).range(offset, offset + limit - 1)
   if (opts?.platform) q = q.eq('platform', opts.platform)
   if (opts?.cuisine)  q = q.contains('cuisine_tags', [opts.cuisine])
-  if (opts?.search)   q = q.or('name.ilike.%' + opts.search + '%,handle.ilike.%' + opts.search + '%')
   const { data, error, count } = await q
   if (error) throw error
   return { data: (data ?? []) as unknown as Influencer[], count: count ?? 0 }
