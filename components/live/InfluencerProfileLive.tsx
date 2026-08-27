@@ -71,8 +71,10 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px 0' }}>
           <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 20 }}>
             {/* Avatar */}
-            <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#FEF0EA', color: C.coral, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700, border: `3px solid ${C.coral}`, flexShrink: 0 }}>
-              {influencer.avatar_initials}
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#FEF0EA', color: C.coral, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700, border: `3px solid ${C.coral}`, flexShrink: 0, overflow: 'hidden' }}>
+              {influencer.avatar_url ? (
+                <img src={influencer.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : influencer.avatar_initials}
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>

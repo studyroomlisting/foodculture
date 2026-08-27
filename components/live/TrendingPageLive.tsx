@@ -135,8 +135,10 @@ export default async function TrendingPageLive() {
                   <div style={{ fontSize: 18, fontWeight: 700, color: i === 0 ? '#E85D26' : i === 1 ? '#D4860A' : '#888', width: 28, textAlign: 'center' }}>
                     {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                   </div>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: palette[i % palette.length].bg, color: palette[i % palette.length].color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                    {inf.avatar_initials}
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: palette[i % palette.length].bg, color: palette[i % palette.length].color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, flexShrink: 0, overflow: 'hidden' }}>
+                    {inf.avatar_url ? (
+                      <img src={inf.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : inf.avatar_initials}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{inf.name}</div>

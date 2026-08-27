@@ -48,6 +48,7 @@ export interface Influencer {
   name: string
   handle: string
   avatar_initials: string | null
+  avatar_url: string | null
   bio: string | null
   platform: 'instagram' | 'youtube' | 'both'
   followers_count: number

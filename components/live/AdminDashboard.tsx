@@ -41,7 +41,7 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
     const [{ data: l }, { data: ci }, { data: u }, { data: r }, { data: e }, { data: al }, { data: cl }, { data: p }, { data: ar }, { data: ai }] = await Promise.all([
       (supabase as any).from('restaurants').select('id,name,area_label,listing_status,rating,created_at,emoji,owner_id').order('created_at', { ascending: false }),
       // Real creator (influencer) signups only — seed/demo rows have no profile_id.
-      (supabase as any).from('influencers').select('id,slug,name,handle,avatar_initials,cuisine_tags,listing_status,rejection_reason,created_at,profile_id').not('profile_id', 'is', null).order('created_at', { ascending: false }),
+      (supabase as any).from('influencers').select('id,slug,name,handle,avatar_initials,avatar_url,cuisine_tags,listing_status,rejection_reason,created_at,profile_id').not('profile_id', 'is', null).order('created_at', { ascending: false }),
       (supabase as any).from('profiles').select('id,full_name,role,onboarding_complete,created_at').order('created_at', { ascending: false }),
       (supabase as any).from('reviews').select('id,reviewer_name,rating,body,restaurant_id,created_at').order('created_at', { ascending: false }),
       (supabase as any).from('enquiries').select('*').order('created_at', { ascending: false }),
@@ -290,8 +290,10 @@ export default function AdminDashboard({ initialTab = 'listings' }: { initialTab
                     const ss = STATUS_STYLE[c.listing_status] ?? STATUS_STYLE.draft
                     return (
                       <div key={c.id} style={{display:'flex',alignItems:'center',gap:14,padding:'14px 20px',borderBottom:`1px solid #f5f0eb`}}>
-                        <div style={{width:36,height:36,borderRadius:'50%',background:'#F3EFFE',color:'#7F77DD',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:14,flexShrink:0}}>
-                          {c.avatar_initials || (c.name||'C').charAt(0).toUpperCase()}
+                        <div style={{width:36,height:36,borderRadius:'50%',background:'#F3EFFE',color:'#7F77DD',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:14,flexShrink:0,overflow:'hidden'}}>
+                          {c.avatar_url ? (
+                            <img src={c.avatar_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                          ) : (c.avatar_initials || (c.name||'C').charAt(0).toUpperCase())}
                         </div>
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{fontSize:13,fontWeight:700}}>{c.name||'—'}</div>

@@ -177,8 +177,10 @@ export default async function HomePageLive() {
         {influencers[0] && (
           <Link href={`/influencers/${influencers[0].slug}`} style={{ textDecoration:'none', color:'inherit' }}>
             <div style={{ background:'#FEF9F6', border:'1px solid #f5d5c0', borderRadius:14, padding:16, marginBottom:12, display:'flex', alignItems:'center', gap:14 }}>
-              <div style={{ width:50, height:50, borderRadius:'50%', background:'#FEF0EA', color:'#E85D26', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:17, border:'2px solid #E85D26', flexShrink:0 }} aria-hidden="true">
-                {influencers[0].avatar_initials}
+              <div style={{ width:50, height:50, borderRadius:'50%', background:'#FEF0EA', color:'#E85D26', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:17, border:'2px solid #E85D26', flexShrink:0, overflow:'hidden' }} aria-hidden="true">
+                {influencers[0].avatar_url ? (
+                  <img src={influencers[0].avatar_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                ) : influencers[0].avatar_initials}
               </div>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:14, fontWeight:600 }}>{influencers[0].name}</div>
@@ -211,8 +213,10 @@ export default async function HomePageLive() {
                 <div style={{ display:'inline-flex', alignItems:'center', gap:4, background:'#FEF0EA', color:'#E85D26', fontSize:9, fontWeight:600, padding:'3px 8px', borderRadius:10, marginBottom:8 }} aria-label={`Ranked #${i+2} this week`}>
                   🏆 #{i+2}
                 </div>
-                <div style={{ width:44, height:44, borderRadius:'50%', margin:'0 auto 8px', background:'#FEF0EA', color:'#E85D26', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:700, border:'2px solid #f5ede5' }} aria-hidden="true">
-                  {inf.avatar_initials}
+                <div style={{ width:44, height:44, borderRadius:'50%', margin:'0 auto 8px', background:'#FEF0EA', color:'#E85D26', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:700, border:'2px solid #f5ede5', overflow:'hidden' }} aria-hidden="true">
+                  {inf.avatar_url ? (
+                    <img src={inf.avatar_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  ) : inf.avatar_initials}
                 </div>
                 <div style={{ fontSize:13, fontWeight:600 }}>{inf.name}</div>
                 <div style={{ fontSize:10, color:'#aaa', marginBottom:10 }}>{inf.handle} · {(inf.followers_count/1000).toFixed(0)}K</div>

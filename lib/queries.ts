@@ -15,7 +15,7 @@ const RESTAURANT_FULL_COLS = 'id,slug,name,emoji,zone_id,location_id,owner_id,ar
 // whole page with a client-side exception. The component also has its own
 // `?? []` / `?? '—'` fallbacks now as a second line of defence, but the
 // query needs to actually fetch the data for those to have anything to show.
-const INFLUENCER_COLS = 'id,slug,name,handle,platform,avatar_initials,bio,followers_count,cuisine_tags,impact_score,trust_score,engagement_rate,fake_follower_pct,visits_driven_weekly,avg_views,response_time_label,active_cities,connection_fee,rank_this_week,pricing_tiers:influencer_pricing_tiers(id,tier_name,price,deliverables,estimated_reach,turnaround_days)'
+const INFLUENCER_COLS = 'id,slug,name,handle,platform,avatar_initials,avatar_url,bio,followers_count,cuisine_tags,impact_score,trust_score,engagement_rate,fake_follower_pct,visits_driven_weekly,avg_views,response_time_label,active_cities,connection_fee,rank_this_week,pricing_tiers:influencer_pricing_tiers(id,tier_name,price,deliverables,estimated_reach,turnaround_days)'
 
 // ─── RESTAURANTS ────────────────────────────────────────────────────────────
 
@@ -177,7 +177,7 @@ export async function getInfluencerPosts(influencer_id: string, limit = 5): Prom
 }
 
 export async function getPostsForRestaurant(restaurant_id: string, limit = 5): Promise<InfluencerRestaurantPost[]> {
-  const { data, error } = await (supabase as any).from('influencer_restaurant_posts').select('id,influencer_id,restaurant_id,caption,views,likes,comments,visits_driven,posted_at,influencer:influencers(id,name,handle,avatar_initials,followers_count,impact_score)').eq('restaurant_id', restaurant_id).order('posted_at',{ascending:false}).limit(limit)
+  const { data, error } = await (supabase as any).from('influencer_restaurant_posts').select('id,influencer_id,restaurant_id,caption,views,likes,comments,visits_driven,posted_at,influencer:influencers(id,name,handle,avatar_initials,avatar_url,followers_count,impact_score)').eq('restaurant_id', restaurant_id).order('posted_at',{ascending:false}).limit(limit)
   if (error) throw error
   return data ?? []
 }

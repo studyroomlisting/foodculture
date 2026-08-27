@@ -37,7 +37,9 @@ export default function InfluencerCard({ influencer: inf, index = 0, rank, compa
         {/* Avatar */}
         <div style={{ width: compact ? 44 : 60, height: compact ? 44 : 60, borderRadius: '50%', margin: '0 auto 10px', background: p.bg, color: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: compact ? 15 : 20, border: `2px solid ${p.color}30`, position: 'relative', overflow: 'hidden' }}
           aria-hidden="true">
-          {inf.avatar_initials}
+          {inf.avatar_url ? (
+            <img src={inf.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : inf.avatar_initials}
         </div>
 
         <div style={{ fontSize: compact ? 13 : 15, fontWeight: 600, marginBottom: 2 }}>{inf.name}</div>

@@ -345,8 +345,10 @@ export default function DashboardLive() {
                     const inf = (p as any).influencer
                     return (
                       <div key={p.id} style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#FEF0EA', color: C.coral, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
-                          {inf?.avatar_initials ?? '?'}
+                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#FEF0EA', color: C.coral, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0, overflow: 'hidden' }}>
+                          {inf?.avatar_url ? (
+                            <img src={inf.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (inf?.avatar_initials ?? '?')}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
