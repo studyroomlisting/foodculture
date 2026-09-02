@@ -270,7 +270,7 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
                   disabled={!form.restaurant_name || !form.requester_name}
                   style={{ background: C.coral, color: '#fff', border: 'none', borderRadius: 24, padding: '12px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: (!form.restaurant_name || !form.requester_name) ? 0.5 : 1 }}
                 >
-                  Send connection request · ₹{(influencer.connection_fee ?? 0).toLocaleString()}
+                  Send connection
                 </button>
               </div>
             )}
@@ -282,10 +282,7 @@ export default function InfluencerProfileLive({ slug }: { slug: string }) {
       {showModal && (
         <div onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, padding: 28, width: 380, maxWidth: '90vw' }}>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Connect with {influencer.name}</div>
-            <p style={{ fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 1.5 }}>
-              Fee of <strong style={{ color: C.coral }}>₹{(influencer.connection_fee ?? 0).toLocaleString()}</strong> only charged on acceptance.
-            </p>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 20 }}>Connect with {influencer.name}</div>
             <button onClick={() => { setShowModal(false); setActiveTab('connect') }}
               style={{ width: '100%', background: C.coral, color: '#fff', border: 'none', borderRadius: 24, padding: '12px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
               Fill connection form →
